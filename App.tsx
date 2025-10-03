@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import type { UserProfile, View } from './types';
 import { Landing } from './pages/Landing';
@@ -31,6 +31,10 @@ const App: React.FC = () => {
     const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
     const [hasNewMatch, setHasNewMatch] = useState(false);
     const [matchToChat, setMatchToChat] = useState<UserProfile | null>(null);
+
+    const onChatOpened = useCallback(() => {
+        setMatchToChat(null);
+    }, []);
 
     useEffect(() => {
         // Mock fetching initial matches for logged in user
@@ -94,7 +98,7 @@ const App: React.FC = () => {
                     currentView={view} 
                     setView={setView}
                     matchToChat={matchToChat}
-                    onChatOpened={() => setMatchToChat(null)}
+                    onChatOpened={onChatOpened}
                 />;
                 if (view === 'matches') setHasNewMatch(false); // Clear notification when viewing matches list
                 break;

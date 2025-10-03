@@ -24,9 +24,13 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
             setActiveChat(matchToChat);
             setIsFromNewMatch(true); // Flag that this chat was opened from the modal
             
-            // Initialize messages if they don't exist
-            if (!allMessages[matchToChat.id]) {
-                setAllMessages(prev => ({
+            // Initialize messages if they don't exist, using a functional update
+            // to avoid depending on `allMessages` in the dependency array.
+            setAllMessages(prev => {
+                if (prev[matchToChat.id]) {
+                    return prev; // Messages already exist, no state change needed
+                }
+                return {
                     ...prev,
                     [matchToChat.id]: [{
                         id: Date.now(),
@@ -34,11 +38,12 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
                         text: `Você deu match com ${matchToChat.name}. Diga oi!`,
                         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     }]
-                }));
-            }
+                };
+            });
+
             onChatOpened(); // Notify App.tsx that the prop has been consumed
         }
-    }, [matchToChat, currentView, onChatOpened, allMessages]);
+    }, [matchToChat, currentView, onChatOpened]);
 
     const handleSelectMatchFromList = (match: UserProfile) => {
         setActiveChat(match);
