@@ -40,6 +40,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
     const [isSaving, setIsSaving] = useState(false);
     const [bioError, setBioError] = useState('');
 
+    const allInterests = ['Viagens', 'Música', 'Cinema', 'Cozinhar', 'Esportes', 'Leitura', 'Tecnologia', 'Arte', 'Fotografia', 'Natureza'];
     const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes', 'Indiferente'];
     const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra', 'Indiferente'];
     const fumanteOptions: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
@@ -50,6 +51,15 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
         setProfile(prev => ({ ...prev, [name]: name === 'age' || name === 'altura' || name === 'numLikes' ? Number(value) : value }));
     };
     
+    const handleInterestToggle = (interest: string) => {
+        setProfile(prev => {
+            const interests = prev.interests.includes(interest)
+                ? prev.interests.filter(i => i !== interest)
+                : [...prev.interests, interest];
+            return { ...prev, interests };
+        });
+    };
+
     const handleSave = async () => {
         if (isSaving) return;
         setIsSaving(true);
@@ -215,8 +225,23 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
 
                  <FormSection title="Meus Interesses">
                      <div>
-                        <Label htmlFor="interests">Interesses (separados por vírgula)</Label>
-                        <Input id="interests" name="interests" value={profile.interests.join(', ')} onChange={e => setProfile(p => ({...p, interests: e.target.value.split(',').map(s => s.trim())}))} />
+                        <Label htmlFor="interests">Selecione seus interesses</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {allInterests.map(interest => (
+                                <button
+                                    key={interest}
+                                    type="button"
+                                    onClick={() => handleInterestToggle(interest)}
+                                    className={`text-sm py-2 px-4 rounded-full border transition-colors ${
+                                        profile.interests.includes(interest)
+                                            ? 'bg-pink-500 border-pink-500 text-white'
+                                            : 'bg-gray-800 border-gray-600 hover:border-pink-500'
+                                    }`}
+                                >
+                                    {interest}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </FormSection>
 

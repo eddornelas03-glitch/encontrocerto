@@ -194,8 +194,8 @@ export const supabase = {
     },
     async signInWithOAuth({ provider }: { provider: 'google' }) {
         console.log(`Simulando login com o provedor: ${provider}. Em uma aplicação real, você seria redirecionado.`);
-        // Aumenta o delay para simular o fluxo de redirecionamento do OAuth
-        await delay(1500);
+        // Delay is now handled by the fake login UI. This can be quick.
+        await delay(100);
         
         // Simula o login bem-sucedido com o usuário padrão
         currentUser = defaultUser;

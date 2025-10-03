@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import type { View } from '../types';
+import type { UserProfile, View } from '../types';
+import { supabase } from '../services/supabaseService';
 
 interface MyProfileProps {
     setView: (view: View) => void;
+    onStartChat: (profile: UserProfile) => void;
 }
 
 const EditIcon = () => (
@@ -15,12 +17,30 @@ const EditIcon = () => (
 
 const HeartIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-pink-400">
-        <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.345 22.345 0 01-2.846-2.434c-.26-.323-.51-.653-.747-.991l-.255-.373a.85.85 0 01-.042-.105A3.01 3.01 0 012 10c0-1.657 1.343-3 3-3a3.01 3.01 0 012.25 1.007A3.01 3.01 0 0112.25 8 3 3 0 0115 11c0 .599-.155 1.164-.43 1.66l-.255.373a.85.85 0 01-.042.105c-.237.338-.487.668-.747.991a22.345 22.345 0 01-2.846 2.434 22.045 22.045 0 01-2.582 1.9 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.002z" />
+        <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.345 22.345 0 01-2.846-2.434c-.26-.323-.51-.653-.747-.991l-.255-.373a.85.85 0 01-.042-.105A3.01 3.01 0 012 10c0-1.657 1.343-3 3-3a3.01 3.01 0 012.25 1.007A3.01 3.01 0 0112.25 8 3 3 0 0115 11c0 .599-.155 1.164-.43 1.66l-.255.373a.85.85 0 01-.042-.105c-.237.338-.487.668-.747.991a22.345 22.345 0 01-2.846 2.434 22.045 22.045 0 01-2.582 1.9 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.002z" />
     </svg>
 );
 
-export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
+export const MyProfile: React.FC<MyProfileProps> = ({ setView, onStartChat }) => {
     const { user, signOut } = useAuth();
+    const [perfectMatch, setPerfectMatch] = useState<UserProfile | null>(null);
+    const [loadingMatch, setLoadingMatch] = useState(true);
+
+    useEffect(() => {
+        const findPerfectMatch = async () => {
+            // Em um aplicativo real, esta seria uma chamada de API específica.
+            // Aqui, simulamos buscando perfis públicos e escolhendo um.
+            const { data } = await supabase.fetchPublicProfiles(1);
+            if (data && data.length > 0) {
+                // Define artificialmente a compatibilidade como 100% para a demonstração
+                const match = { ...data[0], compatibility: 100 };
+                setPerfectMatch(match);
+            }
+            setLoadingMatch(false);
+        };
+
+        findPerfectMatch();
+    }, []);
 
     if (!user) {
         return <div className="p-4 text-white">Usuário não encontrado.</div>;
@@ -53,6 +73,30 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                         <EditIcon/> Editar
                     </button>
                 </div>
+
+                {loadingMatch ? (
+                    <div className="text-center p-4 mt-8 bg-gray-800 rounded-lg">
+                        <p className="text-gray-400">Procurando seu par perfeito...</p>
+                    </div>
+                ) : perfectMatch ? (
+                    <div className="mt-8 bg-gradient-to-r from-pink-500/20 to-yellow-500/20 p-4 rounded-xl border border-pink-400/50 shadow-lg">
+                        <h2 className="text-xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-300 mb-3">Seu Par Perfeito!</h2>
+                        <div className="flex items-center gap-4">
+                            <img src={perfectMatch.images[0]} alt={perfectMatch.apelido} className="w-16 h-16 rounded-full object-cover border-2 border-white" />
+                            <div className="flex-1">
+                                <p className="font-semibold">{perfectMatch.apelido}, {perfectMatch.age}</p>
+                                <p className="text-sm text-gray-200">"Vocês são perfeitos um para o outro"</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => onStartChat(perfectMatch)}
+                            className="mt-4 w-full bg-white/90 text-gray-900 font-bold py-2 px-4 rounded-full hover:bg-white transition-colors"
+                        >
+                            Iniciar Conversa
+                        </button>
+                    </div>
+                ) : null}
+
 
                 <div className="mt-8 border-t border-gray-700 pt-6">
                     <h2 className="text-pink-400 font-bold">Bio</h2>

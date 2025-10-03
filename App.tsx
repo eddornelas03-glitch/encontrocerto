@@ -7,6 +7,7 @@ import { Register } from './components/Register';
 import { Explore } from './pages/Explore';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
+import { FakeGoogleLogin } from './pages/FakeGoogleLogin';
 import { supabase } from './services/supabaseService';
 
 // Lazy load components for code splitting
@@ -24,7 +25,7 @@ const LoadingFallback: React.FC = () => (
 const App: React.FC = () => {
     const { session, user, loading, updateUser } = useAuth();
     const [view, setView] = useState<View>('explore');
-    const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
+    const [authView, setAuthView] = useState<'landing' | 'login' | 'register' | 'google-login'>('landing');
     
     const [matches, setMatches] = useState<UserProfile[]>([]);
     const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
@@ -76,6 +77,16 @@ const App: React.FC = () => {
         setView('chat');
     };
 
+    const handleGoogleLoginSuccess = async () => {
+        // This triggers the onAuthStateChange in AuthContext
+        await supabase.auth.signInWithOAuth({ provider: 'google' });
+    };
+
+    const handleStartChat = (profile: UserProfile) => {
+        setMatchToChat(profile);
+        setView('chat');
+    };
+
     const renderContent = () => {
         if (loading) {
             return <LoadingFallback />;
@@ -83,10 +94,12 @@ const App: React.FC = () => {
 
         if (!session || !user) {
             switch (authView) {
+                case 'google-login':
+                    return <FakeGoogleLogin onSuccess={handleGoogleLoginSuccess} />;
                 case 'login':
-                    return <Login onNavigateToRegister={() => setAuthView('register')} />;
+                    return <Login onNavigateToRegister={() => setAuthView('register')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
                 case 'register':
-                    return <Register onNavigateToLogin={() => setAuthView('login')} />;
+                    return <Register onNavigateToLogin={() => setAuthView('login')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
                 case 'landing':
                 default:
                     return <Landing onNavigateToLogin={() => setAuthView('login')} onNavigateToRegister={() => setAuthView('register')} />;
@@ -112,7 +125,7 @@ const App: React.FC = () => {
                 // if (view === 'matches') setHasNewMatch(false);
                 break;
             case 'my-profile':
-                ComponentToRender = <MyProfile setView={setView} />;
+                ComponentToRender = <MyProfile setView={setView} onStartChat={handleStartChat} />;
                 break;
             case 'edit-profile':
                 ComponentToRender = <EditProfile onCancel={() => setView('my-profile')} onSave={() => {
