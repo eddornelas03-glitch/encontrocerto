@@ -35,7 +35,7 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
                 <div className="flex justify-center items-center mb-4">
                     <FireIcon />
                 </div>
-                <h1 className="text-4xl font-bold">EncontroCerto</h1>
+                <h1 className="text-4xl font-bold">Encontro Certo</h1>
                 <p className="text-lg text-gray-300 mt-2 max-w-md mx-auto">Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros.</p>
                 <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                     <button onClick={onNavigateToRegister} className="bg-pink-500 font-bold py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors">

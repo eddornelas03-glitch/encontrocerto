@@ -135,7 +135,7 @@ export const supabase = {
           city: 'Indefinida',
           state: 'XX',
           tagline: 'Pronto(a) para novas conexões!',
-          bio: 'Acabei de chegar no EncontroCerto!',
+          bio: 'Acabei de chegar no Encontro Certo!',
           interests: ['Conversar', 'Música'],
           images: [`https://picsum.photos/seed/${newUserId}/600/800`],
           gender: 'Outro',
