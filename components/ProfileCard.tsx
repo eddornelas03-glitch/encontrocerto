@@ -27,7 +27,7 @@ const HeartIcon = () => (
 );
 
 const KeyboardHint = () => (
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white z-10">
+  <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none text-white z-10">
     {/* Left Arrow */}
     <div className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 p-3 rounded-full animate-pulse">
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -46,21 +46,13 @@ const KeyboardHint = () => (
 export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTopCard, triggerSwipe }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [isTouchDevice, setIsTouchDevice] = useState(false);
-
     const [isDragging, setIsDragging] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [rotation, setRotation] = useState(0);
     const [transition, setTransition] = useState('transform 0.3s ease-out');
     const [actionOpacities, setActionOpacities] = useState({ like: 0, nope: 0, super: 0 });
-    
-    // This ref helps distinguish a true "click" from a "drag" action.
     const hasMovedRef = useRef(false);
-
-    useEffect(() => {
-        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    }, []);
 
     const SWIPE_THRESHOLD = 80;
     const SUPER_SWIPE_THRESHOLD = -100;
@@ -69,18 +61,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         return 'touches' in e ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
     };
 
-    const handleDragStart = (e: React.TouchEvent) => {
+    const handlePointerDown = (e: React.TouchEvent | React.MouseEvent) => {
         if (!isTopCard || showDetails) return;
-        e.preventDefault();
-        hasMovedRef.current = false; // Reset movement tracker
+        if ('touches' in e) {
+            e.preventDefault();
+        }
+        hasMovedRef.current = false;
         setIsDragging(true);
         setStartPos(getPointerPosition(e));
         setTransition('none');
     };
 
-    const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
         if (!isDragging) return;
-        hasMovedRef.current = true; // Mark that movement has occurred
+        hasMovedRef.current = true;
         
         const currentPos = getPointerPosition(e);
         const deltaX = currentPos.x - startPos.x;
@@ -95,7 +89,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         setActionOpacities({ like: likeOpacity, nope: nopeOpacity, super: superOpacity });
     };
 
-    const handleDragEnd = () => {
+    const handlePointerUp = () => {
         if (!isDragging) return;
 
         setIsDragging(false);
@@ -114,15 +108,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
             setPosition({ x: position.x, y: -window.innerHeight });
             onSwipe('super');
         } else {
-            // Snap back if not a swipe
             setPosition({ x: 0, y: 0 });
             setRotation(0);
         }
     };
     
-    // This handler now exclusively manages opening the details view.
     const handleClick = () => {
-        // Only open details if the card wasn't dragged.
         if (!hasMovedRef.current) {
             setShowDetails(true);
         }
@@ -130,13 +121,16 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
 
     useEffect(() => {
         if (isDragging) {
-            // Note: For touch devices, mouse events are simulated, but we only listen to touchmove.
-            window.addEventListener('touchmove', handleDragMove);
-            window.addEventListener('touchend', handleDragEnd);
+            window.addEventListener('mousemove', handlePointerMove);
+            window.addEventListener('mouseup', handlePointerUp);
+            window.addEventListener('touchmove', handlePointerMove);
+            window.addEventListener('touchend', handlePointerUp);
         }
         return () => {
-            window.removeEventListener('touchmove', handleDragMove);
-            window.removeEventListener('touchend', handleDragEnd);
+            window.removeEventListener('mousemove', handlePointerMove);
+            window.removeEventListener('mouseup', handlePointerUp);
+            window.removeEventListener('touchmove', handlePointerMove);
+            window.removeEventListener('touchend', handlePointerUp);
         };
     }, [isDragging, startPos]);
 
@@ -180,15 +174,16 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
     return (
         <>
         <div 
-            className={`absolute inset-0 p-4 ${isTopCard ? 'cursor-pointer z-20' : ''}`}
+            className={`absolute inset-0 p-4 ${isTopCard ? 'cursor-grab active:cursor-grabbing z-20' : ''}`}
             style={isTopCard ? cardStyle : {}}
-            onTouchStart={handleDragStart}
-            onClick={handleClick} // Use the dedicated click handler
+            onMouseDown={handlePointerDown}
+            onTouchStart={handlePointerDown}
+            onClick={handleClick}
         >
             <div className="relative w-full h-full bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                 <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" />
 
-                {!isTouchDevice && isTopCard && !showDetails && <KeyboardHint />}
+                {isTopCard && !showDetails && <KeyboardHint />}
                 
                 {isTopCard && (
                     <>
@@ -227,7 +222,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
                     </div>
                     <p className="mt-4 self-start flex items-center gap-2 text-white font-semibold text-sm">
                         <InfoIcon />
-                        {isTouchDevice ? 'Toque para ver mais' : 'Clique para ver mais'}
+                        <span className="lg:hidden">Toque para ver mais</span>
+                        <span className="hidden lg:inline">Clique para ver mais</span>
                     </p>
                 </div>
             </div>
