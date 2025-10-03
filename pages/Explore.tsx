@@ -81,7 +81,6 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [swipeAnimation, setSwipeAnimation] = useState<'left' | 'right' | 'super' | null>(null);
     const [showAd, setShowAd] = useState(false);
 
     const loadAndFilterProfiles = useCallback(async () => {
@@ -117,8 +116,8 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
 
         const currentProfile = profiles[currentIndex];
 
-        setSwipeAnimation(direction);
-
+        // The ProfileCard handles its own animation. We just wait for it to finish
+        // before removing it from the DOM by updating the index.
         setTimeout(() => {
             if (direction === 'right') {
                 // Simulate a match 40% of the time for compatible profiles
@@ -127,7 +126,6 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
                 }
             }
             setCurrentIndex(prevIndex => prevIndex + 1);
-            setSwipeAnimation(null);
         }, 300);
     };
     
@@ -135,13 +133,9 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
         setShowAd(false);
         if (watched && currentIndex < profiles.length) {
             const currentProfile = profiles[currentIndex];
-            setSwipeAnimation('super');
-             setTimeout(() => {
-                // Super likes always result in a match in this mock
-                onNewMatch(currentProfile);
-                setCurrentIndex(prevIndex => prevIndex + 1);
-                setSwipeAnimation(null);
-            }, 300);
+            // Super likes always result in a match in this mock
+            onNewMatch(currentProfile);
+            setCurrentIndex(prevIndex => prevIndex + 1);
         }
     };
 
@@ -169,17 +163,8 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
 
         return profiles.slice(currentIndex).reverse().map((profile, index) => {
             const isTopCard = index === profiles.slice(currentIndex).length - 1;
-            let cardClass = "transition-transform duration-300 ease-in-out";
-            if(isTopCard && swipeAnimation === 'left') {
-               cardClass += ' -translate-x-full -rotate-12 opacity-0';
-            } else if (isTopCard && swipeAnimation === 'right') {
-               cardClass += ' translate-x-full rotate-12 opacity-0';
-            } else if (isTopCard && swipeAnimation === 'super') {
-               cardClass += ' translate-y-[-100%] opacity-0 scale-110';
-            }
-
            return (
-               <div key={profile.id} className={cardClass}>
+               <div key={profile.id}>
                    <ProfileCard
                        profile={profile}
                        onSwipe={handleSwipe}

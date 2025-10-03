@@ -10,7 +10,6 @@ import { MatchModal } from './components/MatchModal';
 import { supabase } from './services/supabaseService';
 
 // Lazy load components for code splitting
-const ImageGenerator = lazy(() => import('./pages/ImageGenerator').then(module => ({ default: module.ImageGenerator })));
 const Matches = lazy(() => import('./pages/Matches').then(module => ({ default: module.Matches })));
 const MyProfile = lazy(() => import('./pages/MyProfile').then(module => ({ default: module.MyProfile })));
 const EditProfile = lazy(() => import('./pages/EditProfile').then(module => ({ default: module.EditProfile })));
@@ -121,9 +120,6 @@ const App: React.FC = () => {
                     setView('my-profile');
                 }}/>;
                 break;
-            case 'image-generator':
-                ComponentToRender = <ImageGenerator />;
-                break;
             default:
                 ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;
         }
@@ -142,7 +138,7 @@ const App: React.FC = () => {
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans">
-            <div className="h-full w-full max-w-md mx-auto relative overflow-hidden shadow-2xl">
+            <div className="h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl">
                 {renderContent()}
                 {newMatch && user && (
                     <MatchModal 

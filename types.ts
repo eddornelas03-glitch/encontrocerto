@@ -78,4 +78,4 @@ export interface Session {
     // In a real scenario, this would contain tokens
 }
 
-export type View = 'landing' | 'login' | 'register' | 'explore' | 'matches' | 'chat' | 'my-profile' | 'edit-profile' | 'image-generator';
+export type View = 'landing' | 'login' | 'register' | 'explore' | 'matches' | 'chat' | 'my-profile' | 'edit-profile';

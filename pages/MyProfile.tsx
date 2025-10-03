@@ -111,6 +111,24 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                     </div>
                 </div>
 
+                <div className="mt-6 border-t border-gray-700 pt-6">
+                    <h2 className="text-pink-400 font-bold text-lg mb-4">Privacidade</h2>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
+                            <p className="text-gray-200">Aparecer em buscas públicas</p>
+                            <span className={`px-3 py-1 text-xs font-bold rounded-full ${profile.isPubliclySearchable ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                {profile.isPubliclySearchable ? 'Ativado' : 'Desativado'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
+                            <p className="text-gray-200">Mostrar número de curtidas</p>
+                            <span className={`px-3 py-1 text-xs font-bold rounded-full ${profile.showLikes ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                {profile.showLikes ? 'Ativado' : 'Desativado'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
 
                 <div className="mt-10 border-t border-gray-700 pt-6">
                     <button

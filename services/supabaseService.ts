@@ -173,13 +173,12 @@ export const supabase = {
             petsDesejado: 'Indiferente',
             disponibilidadeDesejada: [],
         }
-      }
-      currentUser = newUser;
-      mockSession = { user: currentUser };
-      if (authStateChangeCallback) {
-        authStateChangeCallback('SIGNED_IN', mockSession);
-      }
-      return { data: { session: mockSession }, error: null };
+      };
+      
+      // This is the key change: we no longer automatically sign the user in.
+      // We return a successful response without a session, simulating that an
+      // email verification is now required.
+      return { data: { session: null }, error: null };
     },
     async signInWithPassword({ email, password }) {
       await delay(500);

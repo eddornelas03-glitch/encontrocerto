@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import type { UserProfile, UserPreferences } from '../types';
 import { isTextOffensive } from '../services/geminiService';
@@ -27,34 +27,9 @@ const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
     <select {...props} className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white" />
 );
 
-const MultiSelectCheckbox: React.FC<{ options: string[], selected: string[], onChange: (selected: string[]) => void }> = ({ options, selected, onChange }) => {
-    const handleToggle = (option: string) => {
-        if (selected.includes(option)) {
-            onChange(selected.filter(item => item !== option));
-        } else {
-            onChange([...selected, option]);
-        }
-    };
-
-    return (
-        <div className="flex flex-wrap gap-2">
-            {options.map(option => (
-                <button
-                    key={option}
-                    type="button"
-                    onClick={() => handleToggle(option)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selected.includes(option) ? 'bg-pink-500 text-white' : 'bg-gray-700 text-gray-200'}`}
-                >
-                    {option}
-                </button>
-            ))}
-        </div>
-    );
-};
-
-
 export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) => {
     const { user, updateUser } = useAuth();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     if (!user) {
         return <div>Carregando...</div>;
@@ -97,6 +72,29 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
         onSave();
         setIsSaving(false);
     };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && profile.images.length < 10) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfile(prev => ({
+                    ...prev,
+                    images: [...prev.images, reader.result as string]
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset file input to allow uploading the same file again
+        e.target.value = '';
+    };
+
+    const handleRemoveImage = (indexToRemove: number) => {
+        setProfile(prev => ({
+            ...prev,
+            images: prev.images.filter((_, index) => index !== indexToRemove)
+        }));
+    };
     
     return (
         <div className="h-full w-full bg-gray-900 text-white flex flex-col">
@@ -112,12 +110,38 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                 <FormSection title="Fotos">
                     <div className="grid grid-cols-3 gap-3">
                         {profile.images.map((img, i) => (
-                             <img key={i} src={img} alt={`Foto ${i+1}`} className="aspect-square w-full object-cover rounded-lg" />
+                             <div key={i} className="relative group">
+                                <img src={img} alt={`Foto ${i+1}`} className="aspect-square w-full object-cover rounded-lg" />
+                                <button
+                                    onClick={() => handleRemoveImage(i)}
+                                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    aria-label="Remover foto"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                    </svg>
+                                </button>
+                             </div>
                         ))}
-                         <div className="aspect-square w-full flex items-center justify-center bg-gray-800 border-2 border-dashed border-gray-600 rounded-lg">
-                            <span className="text-gray-500 text-3xl">+</span>
-                        </div>
+                        {profile.images.length < 10 && (
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="aspect-square w-full flex items-center justify-center bg-gray-800 border-2 border-dashed border-gray-600 rounded-lg hover:border-pink-500 hover:text-pink-500 transition-colors"
+                                aria-label="Adicionar foto"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        accept="image/png, image/jpeg, image/webp"
+                    />
                 </FormSection>
 
                 <FormSection title="Sobre Mim">
@@ -249,9 +273,16 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                 </FormSection>
 
                 <FormSection title="Privacidade">
-                    <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                        <Label htmlFor="isPubliclySearchable">Aparecer em buscas públicas</Label>
-                        <input type="checkbox" id="isPubliclySearchable" name="isPubliclySearchable" checked={profile.isPubliclySearchable} onChange={e => setProfile(p => ({...p, isPubliclySearchable: e.target.checked}))} className="h-5 w-5 rounded text-pink-500 bg-gray-700 border-gray-600 focus:ring-pink-600" />
+                    <div>
+                        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                            <Label htmlFor="isPubliclySearchable">Aparecer em buscas públicas</Label>
+                            <input type="checkbox" id="isPubliclySearchable" name="isPubliclySearchable" checked={profile.isPubliclySearchable} onChange={e => setProfile(p => ({...p, isPubliclySearchable: e.target.checked}))} className="h-5 w-5 rounded text-pink-500 bg-gray-700 border-gray-600 focus:ring-pink-600" />
+                        </div>
+                        {profile.isPubliclySearchable && (
+                            <p className="text-xs text-gray-400 mt-2 px-1">
+                                Ao tornar seu perfil público, você poderá ser descoberto por outros usuários através da busca por nome, tanto na tela inicial (antes do login) quanto dentro do aplicativo. Isso aumenta sua visibilidade e chances de encontrar novas conexões.
+                            </p>
+                        )}
                     </div>
                      <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
                         <Label htmlFor="showLikes">Mostrar número de curtidas</Label>

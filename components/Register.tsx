@@ -6,12 +6,20 @@ interface RegisterProps {
   onNavigateToLogin: () => void;
 }
 
+const MailIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+    </svg>
+);
+
+
 export const Register: React.FC<RegisterProps> = ({ onNavigateToLogin }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [emailSent, setEmailSent] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,12 +34,35 @@ export const Register: React.FC<RegisterProps> = ({ onNavigateToLogin }) => {
                 } 
             } 
         });
+        setLoading(false);
          if (error) {
             setError("Falha no cadastro. Tente outro e-mail.");
+        } else {
+            setEmailSent(true);
         }
-        // The onAuthStateChange in AuthContext will handle navigation
-        setLoading(false);
     };
+
+    if (emailSent) {
+        return (
+            <div className="h-full w-full flex flex-col justify-center items-center p-8 text-white bg-gray-900 text-center">
+                <div className="w-full max-w-sm">
+                    <div className="flex justify-center mb-6">
+                        <MailIcon />
+                    </div>
+                    <h1 className="text-3xl font-bold">Verifique seu e-mail</h1>
+                    <p className="text-gray-300 mt-4">
+                        Enviamos um link de confirmação para <strong className="text-pink-400">{email}</strong>. Por favor, clique no link para ativar sua conta.
+                    </p>
+                    <button
+                        onClick={onNavigateToLogin}
+                        className="mt-8 w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors duration-300"
+                    >
+                        Ir para Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full w-full flex flex-col justify-center items-center p-8 text-white bg-gray-900 overflow-y-auto">
