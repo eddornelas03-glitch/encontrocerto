@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { UserProfile } from '../types';
+import type { UserProfile, UserPreferences } from '../types';
 
 interface ProfileCardProps {
   profile: UserProfile;
   onSwipe: (direction: 'left' | 'right' | 'super') => void;
   isTopCard: boolean;
   triggerSwipe?: 'left' | 'right' | 'super' | 'reset' | null;
+  currentUserPreferences: UserPreferences;
 }
 
 const InfoIcon = () => (
@@ -43,7 +44,24 @@ const KeyboardHint = () => (
   </div>
 );
 
-export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTopCard, triggerSwipe }) => {
+const CheckmarkIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-green-400">
+        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clipRule="evenodd" />
+    </svg>
+);
+
+const DetailItem: React.FC<{ label: string; value: React.ReactNode; isMatch: boolean }> = ({ label, value, isMatch }) => (
+    <div>
+        <h2 className="text-pink-400 font-bold flex items-center gap-1">
+            {label}
+            {isMatch && <CheckmarkIcon />}
+        </h2>
+        <p className="mt-1 text-gray-200">{value}</p>
+    </div>
+);
+
+
+export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTopCard, triggerSwipe, currentUserPreferences }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -176,6 +194,17 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         touchAction: 'none',
     };
 
+    // Calculate matches for details view
+    const prefs = currentUserPreferences;
+    const signoMatch = prefs.signoDesejado.includes('Indiferente') || prefs.signoDesejado.includes(profile.signo);
+    const religiaoMatch = prefs.religiaoDesejada.includes('Indiferente') || prefs.religiaoDesejada.includes(profile.religiao);
+    const alturaMatch = profile.altura >= prefs.alturaMinima && profile.altura <= prefs.alturaMaxima;
+    const corpoMatch = prefs.porteFisicoDesejado.includes('Indiferente') || (profile.porteFisico !== 'Prefiro não dizer' && prefs.porteFisicoDesejado.includes(profile.porteFisico));
+    const bebidasMatch = prefs.consumoAlcoolDesejado.includes('Indiferente') || (profile.consumoAlcool !== 'Prefiro não dizer' && prefs.consumoAlcoolDesejado.includes(profile.consumoAlcool));
+    const fumoMatch = prefs.fumanteDesejado.includes('Indiferente') || (profile.fumante !== 'Prefiro não dizer' && prefs.fumanteDesejado.includes(profile.fumante));
+    const petsMatch = prefs.petsDesejado === 'Indiferente' || profile.pets === prefs.petsDesejado;
+
+
     return (
         <>
         <div 
@@ -280,34 +309,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
                             <h2 className="text-pink-400 font-bold">Interesse em</h2>
                             <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
                         </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Signo</h2>
-                            <p className="mt-1 text-gray-200">{profile.signo}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Religião</h2>
-                            <p className="mt-1 text-gray-200">{profile.religiao}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Altura</h2>
-                            <p className="mt-1 text-gray-200">{profile.altura} cm</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Corpo</h2>
-                            <p className="mt-1 text-gray-200">{profile.porteFisico}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Bebidas</h2>
-                            <p className="mt-1 text-gray-200">{profile.consumoAlcool}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Fumo</h2>
-                            <p className="mt-1 text-gray-200">{profile.fumante}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Pets</h2>
-                            <p className="mt-1 text-gray-200">{profile.pets}</p>
-                        </div>
+                        <DetailItem label="Signo" value={profile.signo} isMatch={signoMatch} />
+                        <DetailItem label="Religião" value={profile.religiao} isMatch={religiaoMatch} />
+                        <DetailItem label="Altura" value={`${profile.altura} cm`} isMatch={alturaMatch} />
+                        <DetailItem label="Corpo" value={profile.porteFisico} isMatch={corpoMatch} />
+                        <DetailItem label="Bebidas" value={profile.consumoAlcool} isMatch={bebidasMatch} />
+                        <DetailItem label="Fumo" value={profile.fumante} isMatch={fumoMatch} />
+                        <DetailItem label="Pets" value={profile.pets} isMatch={petsMatch} />
                         <div>
                             <h2 className="text-pink-400 font-bold">Idiomas</h2>
                             <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>

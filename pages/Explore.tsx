@@ -233,6 +233,7 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
                        onSwipe={handleSwipe}
                        isTopCard={isTopCard}
                        triggerSwipe={isTopCard ? keyboardSwipe : null}
+                       currentUserPreferences={user!.preferences}
                    />
                </div>
            );
