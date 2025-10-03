@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: (window as any).process.env.API_KEY });
 
 const initialPrompt = "Uma imagem conceitual mostrando uma ponte quebrada entre linhas de código de um lado e um site vibrante e totalmente renderizado do outro. A ponte está estilhaçada, com pedaços faltando, simbolizando a falha em exibir o site. Um único fio quebrado conecta o código ao espaço vazio onde o site deveria estar. Use um fundo escuro com elementos de código brilhantes e um vazio branco gritante onde o site está faltando. Arte futurista e simbólica.";
 
