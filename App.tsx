@@ -50,6 +50,15 @@ const App: React.FC = () => {
         }
     }, [session]);
     
+    // FIX: Moved state update into a useEffect to prevent render loops.
+    // This effect runs when the view changes and clears the new match notification
+    // in a safe, controlled way.
+    useEffect(() => {
+        if (view === 'matches') {
+            setHasNewMatch(false);
+        }
+    }, [view]);
+
     const handleNewMatch = (profile: UserProfile) => {
         setMatches(prev => [profile, ...prev]);
         setNewMatch(profile);
@@ -100,7 +109,8 @@ const App: React.FC = () => {
                     matchToChat={matchToChat}
                     onChatOpened={onChatOpened}
                 />;
-                if (view === 'matches') setHasNewMatch(false); // Clear notification when viewing matches list
+                // REMOVED: Side-effect from render function that caused infinite loops.
+                // if (view === 'matches') setHasNewMatch(false);
                 break;
             case 'my-profile':
                 ComponentToRender = <MyProfile setView={setView} />;
