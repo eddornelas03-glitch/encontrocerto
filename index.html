@@ -13,6 +13,20 @@
       body {
         font-family: 'Poppins', sans-serif;
       }
+      @keyframes scroll-up {
+        from { transform: translateY(0); }
+        to { transform: translateY(-50%); }
+      }
+      @keyframes scroll-down {
+        from { transform: translateY(-50%); }
+        to { transform: translateY(0); }
+      }
+      .animate-scroll-up {
+        animation: scroll-up 80s linear infinite;
+      }
+      .animate-scroll-down {
+        animation: scroll-down 80s linear infinite;
+      }
     </style>
 <script type="importmap">
 {
