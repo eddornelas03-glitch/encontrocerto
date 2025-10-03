@@ -36,7 +36,7 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
                     <FireIcon />
                 </div>
                 <h1 className="text-4xl font-bold">Encontro Certo</h1>
-                <p className="text-lg text-gray-300 mt-2 max-w-md mx-auto">Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros.</p>
+                <p className="text-lg text-gray-300 mt-2 max-w-md lg:max-w-2xl mx-auto">Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros.</p>
                 <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                     <button onClick={onNavigateToRegister} className="bg-pink-500 font-bold py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors">
                         Criar Meu Perfil Grátis
@@ -50,7 +50,7 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
             <main className="px-4 pb-24">
                  <h2 className="text-2xl font-bold text-center mb-6">Explore alguns perfis</h2>
 
-                 <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8 flex flex-col gap-4">
+                 <form onSubmit={handleSearch} className="max-w-2xl lg:max-w-4xl mx-auto mb-8 flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3">
                         <input 
                             type="text" 
@@ -87,7 +87,7 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
                     <div className="text-center text-gray-400 py-8">Buscando perfis...</div>
                  ) : hasSearched ? (
                      profiles.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-2xl lg:max-w-7xl mx-auto">
                             {profiles.map(profile => (
                                 <div key={profile.id} className="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer" onClick={onNavigateToLogin}>
                                     <img src={profile.images[0]} alt={profile.apelido} className="w-full h-full object-cover"/>

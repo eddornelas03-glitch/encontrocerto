@@ -138,7 +138,7 @@ const App: React.FC = () => {
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans">
-            <div className="h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl">
+            <div className="h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl lg:max-w-none lg:mx-0 lg:shadow-none">
                 {renderContent()}
                 {newMatch && user && (
                     <MatchModal 
