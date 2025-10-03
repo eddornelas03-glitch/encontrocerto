@@ -8,7 +8,7 @@ interface LandingProps {
 }
 
 const FireIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-green-500">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-pink-500">
         <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.23V18a.75.75 0 00.75.75h16.5A.75.75 0 0021 18V7.23zM12 21a.75.75 0 00.75-.75V15a.75.75 0 00-1.5 0v5.25A.75.75 0 0012 21zM9 12.75A.75.75 0 009.75 12h4.5a.75.75 0 000-1.5h-4.5A.75.75 0 009 12.75z" />
     </svg>
 );
