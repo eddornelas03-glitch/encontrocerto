@@ -20,8 +20,8 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
 
     useEffect(() => {
         // This effect triggers opening a chat from the new match modal.
-        // It now checks if the incoming match is already the active one to prevent re-render loops.
-        if (matchToChat && matchToChat.id !== activeChat?.id) {
+        // It's designed to run only when the matchToChat prop is newly provided.
+        if (matchToChat) {
             setActiveChat(matchToChat);
             setIsFromNewMatch(true); // Flag that this chat was opened from the modal
             
@@ -43,7 +43,7 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
 
             onChatOpened(); // Notify App.tsx that the prop has been consumed
         }
-    }, [matchToChat, activeChat, onChatOpened]);
+    }, [matchToChat, onChatOpened]);
 
     const handleSelectMatchFromList = (match: UserProfile) => {
         setActiveChat(match);
