@@ -37,7 +37,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setCurrentVie
         <nav className="z-20 bg-gray-900/80 backdrop-blur-sm shrink-0">
             <div className="w-full h-20 flex justify-around items-center border-t border-gray-700">
                 {views.map(({ name, title, icon: Icon }) => (
-                    <button key={name} onClick={() => setCurrentView(name)} className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-pink-500" title={title}>
+                    <button 
+                        key={name} 
+                        onClick={() => setCurrentView(name)} 
+                        className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-pink-500" 
+                        title={title}
+                        data-tour-id={`${name}-nav`}
+                    >
                         <Icon isActive={currentView === name} />
                          <span className={`text-xs ${currentView === name ? 'text-pink-500' : 'text-gray-400'}`}>{title}</span>
                          {name === 'matches' && hasNewMatch && <span className="absolute -top-1 right-1 block h-3 w-3 rounded-full bg-pink-500 border-2 border-white"></span>}
