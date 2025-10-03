@@ -27,6 +27,16 @@
 </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Polyfill to make process.env.API_KEY available in the browser for development.
+      // In a real production app, this key should be managed securely via environment
+      // variables set in your hosting provider (e.g., Vercel, Netlify).
+      window.process = {
+        env: {
+          API_KEY: "AIzaSyCf9JT42lkML0XooSw0wR0wKW0nTNLbFOw"
+        }
+      };
+    </script>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
