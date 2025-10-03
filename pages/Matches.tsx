@@ -19,13 +19,13 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
     const [isFromNewMatch, setIsFromNewMatch] = useState(false);
 
     useEffect(() => {
-        // This effect triggers opening a chat from the new match modal
-        if (matchToChat && currentView === 'chat') {
+        // This effect triggers opening a chat from the new match modal.
+        // It now checks if the incoming match is already the active one to prevent re-render loops.
+        if (matchToChat && matchToChat.id !== activeChat?.id) {
             setActiveChat(matchToChat);
             setIsFromNewMatch(true); // Flag that this chat was opened from the modal
             
-            // Initialize messages if they don't exist, using a functional update
-            // to avoid depending on `allMessages` in the dependency array.
+            // Initialize messages if they don't exist
             setAllMessages(prev => {
                 if (prev[matchToChat.id]) {
                     return prev; // Messages already exist, no state change needed
@@ -43,7 +43,7 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
 
             onChatOpened(); // Notify App.tsx that the prop has been consumed
         }
-    }, [matchToChat, currentView, onChatOpened]);
+    }, [matchToChat, activeChat, onChatOpened]);
 
     const handleSelectMatchFromList = (match: UserProfile) => {
         setActiveChat(match);
