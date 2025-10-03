@@ -54,7 +54,17 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
     }
 
     const [profile, setProfile] = useState<UserProfile>(user.profile);
-    const [preferences, setPreferences] = useState<UserPreferences>(user.preferences);
+    const [preferences, setPreferences] = useState<UserPreferences>({
+        ...user.preferences,
+        // Ao entrar na tela de edição, reseta os filtros de múltipla escolha para 'Indiferente',
+        // para uma experiência de edição limpa e consistente com a modal de filtros.
+        porteFisicoDesejado: ['Indiferente'],
+        fumanteDesejado: ['Indiferente'],
+        consumoAlcoolDesejado: ['Indiferente'],
+        signoDesejado: ['Indiferente'],
+        religiaoDesejada: ['Indiferente'],
+        petsDesejado: 'Indiferente',
+    });
     const [isSaving, setIsSaving] = useState(false);
     const [bioError, setBioError] = useState('');
 
