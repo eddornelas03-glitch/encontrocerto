@@ -56,6 +56,7 @@ export interface Message {
     senderId: number | 'system';
     text: string;
     timestamp: string;
+    type?: 'user' | 'system' | 'ai_analysis';
 }
 
 export interface Meeting {
