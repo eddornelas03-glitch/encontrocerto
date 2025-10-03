@@ -8,7 +8,7 @@ import { Explore } from './pages/Explore';
 import { Matches } from './pages/Matches';
 import { MyProfile } from './pages/MyProfile';
 import { EditProfile } from './pages/EditProfile';
-import { TopOfWeek } from './pages/TopOfWeek';
+import { ImageGenerator } from './pages/ImageGenerator';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
 import { supabase } from './services/supabaseService';
@@ -102,8 +102,8 @@ const App: React.FC = () => {
                     setView('my-profile');
                 }}/>;
                 break;
-            case 'top-of-week':
-                ComponentToRender = <TopOfWeek />;
+            case 'image-generator':
+                ComponentToRender = <ImageGenerator />;
                 break;
             default:
                 ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;

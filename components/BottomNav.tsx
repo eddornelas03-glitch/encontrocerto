@@ -25,11 +25,10 @@ const UserIcon = ({isActive}: {isActive: boolean}) => (
     </svg>
 );
 
-const TrophyIcon = ({isActive}: {isActive: boolean}) => (
+const SparklesIcon = ({isActive}: {isActive: boolean}) => (
      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-7 h-7 ${isActive ? 'text-pink-500' : 'text-gray-400'}`}>
-        <path fillRule="evenodd" d="M15.625 1.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V3.14l-4.502 4.501a.75.75 0 01-1.06 0L4.75 3.061v2.689a.75.75 0 01-1.5 0V2.25a.75.75 0 01.75-.75h11.625z" clipRule="evenodd" />
-        <path d="M3.938 8.719a.75.75 0 01.187 1.05l-1.5 2.25A.75.75 0 011.875 12h1.651a.75.75 0 010 1.5H1.875a.75.75 0 01-.563-1.281l1.5-2.25a.75.75 0 011.126-.188zM20.062 8.719a.75.75 0 00-.187 1.05l1.5 2.25a.75.75 0 00.563.281h1.651a.75.75 0 000-1.5h-1.651a.75.75 0 00-.563 1.281l-1.5-2.25a.75.75 0 00-1.126-.188z" />
-        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6a.75.75 0 001.5 0V6z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
+        <path d="M5.26 17.242a.75.75 0 10-1.06-1.06 7.5 7.5 0 00-1.964 5.344.75.75 0 00.75.75h.001c.49 0 .96-.186 1.32-.517l.041-.041a.75.75 0 00-1.06-1.061l-.041.041a.517.517 0 01-.32.119 6.028 6.028 0 011.64-4.524z" />
     </svg>
 );
 
@@ -39,7 +38,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setCurrentVie
     const views: { name: View, title: string, icon: React.FC<{isActive: boolean}> }[] = [
         { name: 'explore', title: 'Explorar', icon: FireIcon },
         { name: 'matches', title: 'Matches', icon: ChatIcon },
-        { name: 'top-of-week', title: 'Top da Semana', icon: TrophyIcon },
+        { name: 'image-generator', title: 'Gerador AI', icon: SparklesIcon },
         { name: 'my-profile', title: 'Meu Perfil', icon: UserIcon },
     ];
 
