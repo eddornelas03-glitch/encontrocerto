@@ -5,15 +5,16 @@ import { Landing } from './pages/Landing';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Explore } from './pages/Explore';
-import { Matches } from './pages/Matches';
-import { MyProfile } from './pages/MyProfile';
-import { EditProfile } from './pages/EditProfile';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
 import { supabase } from './services/supabaseService';
 
-// Lazy load the ImageGenerator component for code splitting
+// Lazy load components for code splitting
 const ImageGenerator = lazy(() => import('./pages/ImageGenerator').then(module => ({ default: module.ImageGenerator })));
+const Matches = lazy(() => import('./pages/Matches').then(module => ({ default: module.Matches })));
+const MyProfile = lazy(() => import('./pages/MyProfile').then(module => ({ default: module.MyProfile })));
+const EditProfile = lazy(() => import('./pages/EditProfile').then(module => ({ default: module.EditProfile })));
+
 
 const LoadingFallback: React.FC = () => (
     <div className="h-full w-full flex justify-center items-center bg-gray-900">
