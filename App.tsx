@@ -2,15 +2,16 @@ import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import type { UserProfile, View } from './types';
 import { Landing } from './pages/Landing';
-import { Login } from './components/Login';
-import { Register } from './components/Register';
-import { Explore } from './pages/Explore';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
-import { FakeGoogleLogin } from './pages/FakeGoogleLogin';
 import { supabase } from './services/supabaseService';
+import { CookieConsent } from './components/CookieConsent';
 
 // Lazy load components for code splitting
+const Login = lazy(() => import('./components/Login').then(module => ({ default: module.Login })));
+const Register = lazy(() => import('./components/Register').then(module => ({ default: module.Register })));
+const FakeGoogleLogin = lazy(() => import('./pages/FakeGoogleLogin').then(module => ({ default: module.FakeGoogleLogin })));
+const Explore = lazy(() => import('./pages/Explore').then(module => ({ default: module.Explore })));
 const Matches = lazy(() => import('./pages/Matches').then(module => ({ default: module.Matches })));
 const MyProfile = lazy(() => import('./pages/MyProfile').then(module => ({ default: module.MyProfile })));
 const EditProfile = lazy(() => import('./pages/EditProfile').then(module => ({ default: module.EditProfile })));
@@ -31,6 +32,31 @@ const App: React.FC = () => {
     const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
     const [hasNewMatch, setHasNewMatch] = useState(false);
     const [matchToChat, setMatchToChat] = useState<UserProfile | null>(null);
+    const [showCookieConsent, setShowCookieConsent] = useState(false);
+
+    useEffect(() => {
+        // Check for cookie consent on initial load
+        const consent = localStorage.getItem('cookieConsent');
+        if (!consent) {
+            // Use a small delay to prevent layout shift on load
+            const timer = setTimeout(() => {
+                setShowCookieConsent(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const handleConsent = (choice: 'accepted' | 'declined' | 'customized') => {
+        localStorage.setItem('cookieConsent', choice);
+        setShowCookieConsent(false);
+        // In a real app, you might want to initialize analytics scripts here based on the choice.
+        if (choice === 'customized') {
+            // For this example, "customized" will just close the banner.
+            // A real app would open another modal for detailed preferences.
+            console.log("User chose to customize cookie settings.");
+        }
+    };
+
 
     const onChatOpened = useCallback(() => {
         setMatchToChat(null);
@@ -93,17 +119,27 @@ const App: React.FC = () => {
         }
 
         if (!session || !user) {
+            let AuthComponent;
             switch (authView) {
                 case 'google-login':
-                    return <FakeGoogleLogin onSuccess={handleGoogleLoginSuccess} />;
+                    AuthComponent = <FakeGoogleLogin onSuccess={handleGoogleLoginSuccess} />;
+                    break;
                 case 'login':
-                    return <Login onNavigateToRegister={() => setAuthView('register')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    AuthComponent = <Login onNavigateToRegister={() => setAuthView('register')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    break;
                 case 'register':
-                    return <Register onNavigateToLogin={() => setAuthView('login')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    AuthComponent = <Register onNavigateToLogin={() => setAuthView('login')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    break;
                 case 'landing':
                 default:
+                    // Landing is loaded eagerly, no suspense needed for this one path.
                     return <Landing onNavigateToLogin={() => setAuthView('login')} onNavigateToRegister={() => setAuthView('register')} />;
             }
+             return (
+                <Suspense fallback={<LoadingFallback />}>
+                    {AuthComponent}
+                </Suspense>
+            );
         }
 
         // Logged in user view
@@ -165,6 +201,7 @@ const App: React.FC = () => {
                         onSendMessage={openChatFromMatch}
                     />
                 )}
+                 {showCookieConsent && <CookieConsent onConsent={handleConsent} />}
             </div>
         </div>
     );
