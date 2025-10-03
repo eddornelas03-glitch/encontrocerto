@@ -192,6 +192,15 @@ export const supabase = {
       }
       return { data: { session: mockSession }, error: null };
     },
+    async signInForTesting() {
+        await delay(300); // Simulate a quick login
+        currentUser = defaultUser;
+        mockSession = { user: currentUser };
+        if (authStateChangeCallback) {
+            authStateChangeCallback('SIGNED_IN', mockSession);
+        }
+        return { data: { session: mockSession }, error: null };
+    },
     async signInWithOAuth({ provider }: { provider: 'google' }) {
         console.log(`Simulando login com o provedor: ${provider}. Em uma aplicação real, você seria redirecionado.`);
         // Delay is now handled by the fake login UI. This can be quick.

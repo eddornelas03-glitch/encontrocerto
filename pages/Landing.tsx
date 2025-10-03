@@ -5,6 +5,7 @@ import type { UserProfile } from '../types';
 interface LandingProps {
   onNavigateToLogin: () => void;
   onNavigateToRegister: () => void;
+  onNavigateToTest: () => void;
 }
 
 const FireIcon = () => (
@@ -13,7 +14,7 @@ const FireIcon = () => (
     </svg>
 );
 
-export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateToRegister }) => {
+export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateToRegister, onNavigateToTest }) => {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [nameQuery, setNameQuery] = useState('');
@@ -43,6 +44,11 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
                     </button>
                     <button onClick={onNavigateToLogin} className="bg-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-colors">
                         Entrar na Minha Conta
+                    </button>
+                </div>
+                <div className="mt-6 text-center">
+                    <button onClick={onNavigateToTest} className="text-yellow-400 border border-yellow-400/50 font-semibold py-2 px-5 rounded-lg hover:bg-yellow-400/10 transition-colors text-sm">
+                        Entrar para Testar (Dev)
                     </button>
                 </div>
             </header>

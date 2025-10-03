@@ -108,6 +108,11 @@ const App: React.FC = () => {
         await supabase.auth.signInWithOAuth({ provider: 'google' });
     };
 
+    const handleTestLogin = async () => {
+        await supabase.auth.signInForTesting();
+        // The onAuthStateChange in AuthContext will handle the rest
+    };
+
     const handleStartChat = (profile: UserProfile) => {
         setMatchToChat(profile);
         setView('chat');
@@ -133,7 +138,7 @@ const App: React.FC = () => {
                 case 'landing':
                 default:
                     // Landing is loaded eagerly, no suspense needed for this one path.
-                    return <Landing onNavigateToLogin={() => setAuthView('login')} onNavigateToRegister={() => setAuthView('register')} />;
+                    return <Landing onNavigateToLogin={() => setAuthView('login')} onNavigateToRegister={() => setAuthView('register')} onNavigateToTest={handleTestLogin} />;
             }
              return (
                 <Suspense fallback={<LoadingFallback />}>
@@ -161,7 +166,7 @@ const App: React.FC = () => {
                 // if (view === 'matches') setHasNewMatch(false);
                 break;
             case 'my-profile':
-                ComponentToRender = <MyProfile setView={setView} onStartChat={handleStartChat} />;
+                ComponentToRender = <MyProfile setView={setView} />;
                 break;
             case 'edit-profile':
                 ComponentToRender = <EditProfile onCancel={() => setView('my-profile')} onSave={() => {
@@ -187,7 +192,8 @@ const App: React.FC = () => {
 
     const containerClass = session
         ? "h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl"
-        : "h-full w-full relative overflow-hidden";
+        // This is the line that was changed.
+        : "h-full w-full relative";
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans">
