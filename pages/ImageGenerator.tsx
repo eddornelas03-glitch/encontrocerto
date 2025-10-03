@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const initialPrompt = "Uma representação visual da otimização de código para desenvolvimento web. Mostre um emaranhado grande e complexo de fios de código de um lado, representando um build lento e não otimizado. Do outro lado, mostre os mesmos fios organizados de forma limpa, simplificados e brilhando com energia, levando a um ícone de site de carregamento rápido. Use uma estética moderna, abstrata e limpa com azuis, verdes e brancos vibrantes. Estilo minimalista, arte digital";
+const initialPrompt = "Uma imagem conceitual mostrando uma ponte quebrada entre linhas de código de um lado e um site vibrante e totalmente renderizado do outro. A ponte está estilhaçada, com pedaços faltando, simbolizando a falha em exibir o site. Um único fio quebrado conecta o código ao espaço vazio onde o site deveria estar. Use um fundo escuro com elementos de código brilhantes e um vazio branco gritante onde o site está faltando. Arte futurista e simbólica.";
 
 const LoadingSpinner: React.FC = () => (
     <div className="flex flex-col justify-center items-center h-full text-white">
