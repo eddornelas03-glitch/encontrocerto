@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import type { UserProfile, UserPreferences } from '../types';
+import { isTextOffensive } from '../services/geminiService';
 
 interface EditProfileProps {
     onSave: () => void;
@@ -26,9 +27,30 @@ const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
     <select {...props} className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white" />
 );
 
-const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-    <textarea {...props} rows={4} className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white" />
-);
+const MultiSelectCheckbox: React.FC<{ options: string[], selected: string[], onChange: (selected: string[]) => void }> = ({ options, selected, onChange }) => {
+    const handleToggle = (option: string) => {
+        if (selected.includes(option)) {
+            onChange(selected.filter(item => item !== option));
+        } else {
+            onChange([...selected, option]);
+        }
+    };
+
+    return (
+        <div className="flex flex-wrap gap-2">
+            {options.map(option => (
+                <button
+                    key={option}
+                    type="button"
+                    onClick={() => handleToggle(option)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selected.includes(option) ? 'bg-pink-500 text-white' : 'bg-gray-700 text-gray-200'}`}
+                >
+                    {option}
+                </button>
+            ))}
+        </div>
+    );
+};
 
 
 export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) => {
@@ -40,22 +62,40 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
 
     const [profile, setProfile] = useState<UserProfile>(user.profile);
     const [preferences, setPreferences] = useState<UserPreferences>(user.preferences);
+    const [isSaving, setIsSaving] = useState(false);
+    const [bioError, setBioError] = useState('');
+
+    const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes', 'Indiferente'];
+    const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra', 'Indiferente'];
+    const fumanteOptions: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
+    const consumoAlcoolOptions: UserProfile['consumoAlcool'][] = ['Não bebo', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
     
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: name === 'age' || name === 'altura' || name === 'numLikes' ? Number(value) : value }));
     };
-
-    const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    
+    const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setPreferences(prev => ({ ...prev, [name]: Number(value) }));
-    }
+        setPreferences(prev => ({ ...prev, [name]: (name.includes('idade') || name.includes('distancia')) ? Number(value) : value }));
+    };
 
-    const handleSave = () => {
-        // Here you would call an API to save the data.
-        // For this mock, we update the user in the AuthContext.
+    const handleSave = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
+        setBioError('');
+
+        const isBioOffensive = await isTextOffensive(profile.bio);
+
+        if (isBioOffensive) {
+            setBioError('Sua bio viola as diretrizes da comunidade. Por favor, revise o texto.');
+            setIsSaving(false);
+            return;
+        }
+
         updateUser({ ...user, profile, preferences });
         onSave();
+        setIsSaving(false);
     };
     
     return (
@@ -63,7 +103,9 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
             <header className="sticky top-0 bg-gray-900/80 backdrop-blur-sm z-10 flex justify-between items-center p-4 border-b border-gray-700">
                 <button onClick={onCancel} className="text-lg text-gray-300">Cancelar</button>
                 <h1 className="text-xl font-bold">Editar Perfil</h1>
-                <button onClick={handleSave} className="text-lg font-bold text-pink-500">Salvar</button>
+                <button onClick={handleSave} disabled={isSaving || !!bioError} className="text-lg font-bold text-pink-500 disabled:text-gray-500 disabled:cursor-not-allowed">
+                    {isSaving ? 'Salvando...' : 'Salvar'}
+                </button>
             </header>
             
             <main className="overflow-y-auto p-6 pb-24">
@@ -85,7 +127,15 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                     </div>
                     <div>
                         <Label htmlFor="bio">Bio</Label>
-                        <Textarea id="bio" name="bio" value={profile.bio} onChange={handleProfileChange} />
+                        <textarea 
+                            id="bio" 
+                            name="bio" 
+                            value={profile.bio} 
+                            onChange={handleProfileChange} 
+                            rows={4} 
+                            className={`w-full px-4 py-2 bg-gray-800 border rounded-lg focus:outline-none focus:ring-2 text-white ${bioError ? 'border-red-500 ring-red-500' : 'border-gray-600 focus:ring-pink-500'}`} 
+                        />
+                        {bioError && <p className="text-red-500 text-xs mt-1">{bioError}</p>}
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -104,19 +154,41 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                          <div>
                             <Label htmlFor="fumante">Fumante</Label>
                              <Select id="fumante" name="fumante" value={profile.fumante} onChange={handleProfileChange}>
-                                <option>Não</option>
-                                <option>Socialmente</option>
-                                <option>Sim</option>
-                                <option>Prefiro não dizer</option>
+                                {fumanteOptions.map(o => <option key={o}>{o}</option>)}
                             </Select>
                         </div>
                          <div>
                             <Label htmlFor="consumoAlcool">Consumo de Álcool</Label>
                              <Select id="consumoAlcool" name="consumoAlcool" value={profile.consumoAlcool} onChange={handleProfileChange}>
-                                <option>Não bebo</option>
-                                <option>Socialmente</option>
-                                <option>Frequentemente</option>
-                                <option>Prefiro não dizer</option>
+                                 {consumoAlcoolOptions.map(o => <option key={o}>{o}</option>)}
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="signo">Signo</Label>
+                            <Select id="signo" name="signo" value={profile.signo} onChange={handleProfileChange}>
+                                {signos.map(s => <option key={s}>{s}</option>)}
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="religiao">Religião</Label>
+                            <Select id="religiao" name="religiao" value={profile.religiao} onChange={handleProfileChange}>
+                                {religioes.map(r => <option key={r}>{r}</option>)}
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="pets">Tem pets?</Label>
+                            <Select id="pets" name="pets" value={profile.pets} onChange={handleProfileChange}>
+                                <option>Sim</option>
+                                <option>Não</option>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="relationshipGoal">Objetivo</Label>
+                             <Select id="relationshipGoal" name="relationshipGoal" value={profile.relationshipGoal} onChange={handleProfileChange}>
+                                <option>Relacionamento sério</option>
+                                <option>Algo casual</option>
+                                <option>Amizade</option>
+                                <option>Não tenho certeza</option>
                             </Select>
                         </div>
                     </div>
@@ -129,7 +201,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                     </div>
                 </FormSection>
 
-                <FormSection title="Preferências (Privado)">
+                <FormSection title="Preferências de Busca (Privado)">
                     <div>
                         <Label htmlFor="interesseEm">Tenho interesse em</Label>
                          <Select id="interesseEm" name="interesseEm" value={profile.interesseEm} onChange={handleProfileChange}>
@@ -152,16 +224,38 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                             <Input type="number" id="distanciaMaxima" name="distanciaMaxima" value={preferences.distanciaMaxima} onChange={handlePreferenceChange} />
                         </div>
                     </div>
+                     <div className="mt-4">
+                        <Label htmlFor="fumanteDesejado">Preferência de fumante</Label>
+                        <Select id="fumanteDesejado" name="fumanteDesejado" value={preferences.fumanteDesejado[0] || 'Indiferente'} onChange={e => setPreferences(p => ({...p, fumanteDesejado: [e.target.value as any]}))}>
+                            <option>Indiferente</option>
+                            {fumanteOptions.filter(o => o !== 'Prefiro não dizer').map(o => <option key={o}>{o}</option>)}
+                        </Select>
+                    </div>
+                     <div className="mt-4">
+                        <Label htmlFor="consumoAlcoolDesejado">Preferência de álcool</Label>
+                        <Select id="consumoAlcoolDesejado" name="consumoAlcoolDesejado" value={preferences.consumoAlcoolDesejado[0] || 'Indiferente'} onChange={e => setPreferences(p => ({...p, consumoAlcoolDesejado: [e.target.value as any]}))}>
+                             <option>Indiferente</option>
+                            {consumoAlcoolOptions.filter(o => o !== 'Prefiro não dizer').map(o => <option key={o}>{o}</option>)}
+                        </Select>
+                    </div>
+                     <div className="mt-4">
+                        <Label htmlFor="petsDesejado">Preferência de pets</Label>
+                        <Select id="petsDesejado" name="petsDesejado" value={preferences.petsDesejado} onChange={handlePreferenceChange}>
+                            <option>Indiferente</option>
+                            <option>Sim</option>
+                            <option>Não</option>
+                        </Select>
+                    </div>
                 </FormSection>
 
                 <FormSection title="Privacidade">
                     <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
                         <Label htmlFor="isPubliclySearchable">Aparecer em buscas públicas</Label>
-                        <input type="checkbox" id="isPubliclySearchable" name="isPubliclySearchable" checked={profile.isPubliclySearchable} onChange={e => setProfile(p => ({...p, isPubliclySearchable: e.target.checked}))} className="toggle-checkbox" />
+                        <input type="checkbox" id="isPubliclySearchable" name="isPubliclySearchable" checked={profile.isPubliclySearchable} onChange={e => setProfile(p => ({...p, isPubliclySearchable: e.target.checked}))} className="h-5 w-5 rounded text-pink-500 bg-gray-700 border-gray-600 focus:ring-pink-600" />
                     </div>
                      <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
                         <Label htmlFor="showLikes">Mostrar número de curtidas</Label>
-                        <input type="checkbox" id="showLikes" name="showLikes" checked={profile.showLikes} onChange={e => setProfile(p => ({...p, showLikes: e.target.checked}))} className="toggle-checkbox" />
+                        <input type="checkbox" id="showLikes" name="showLikes" checked={profile.showLikes} onChange={e => setProfile(p => ({...p, showLikes: e.target.checked}))} className="h-5 w-5 rounded text-pink-500 bg-gray-700 border-gray-600 focus:ring-pink-600" />
                     </div>
                 </FormSection>
             </main>

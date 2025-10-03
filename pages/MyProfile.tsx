@@ -70,6 +70,22 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-6 mt-6 border-t border-gray-700 pt-6">
                     <div>
+                        <h2 className="text-pink-400 font-bold">Objetivo</h2>
+                        <p className="mt-1 text-gray-200">{profile.relationshipGoal}</p>
+                    </div>
+                    <div>
+                        <h2 className="text-pink-400 font-bold">Interesse em</h2>
+                        <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
+                    </div>
+                    <div>
+                        <h2 className="text-pink-400 font-bold">Signo</h2>
+                        <p className="mt-1 text-gray-200">{profile.signo}</p>
+                    </div>
+                    <div>
+                        <h2 className="text-pink-400 font-bold">Religião</h2>
+                        <p className="mt-1 text-gray-200">{profile.religiao}</p>
+                    </div>
+                     <div>
                         <h2 className="text-pink-400 font-bold">Altura</h2>
                         <p className="mt-1 text-gray-200">{profile.altura} cm</p>
                     </div>
@@ -86,12 +102,12 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                         <p className="mt-1 text-gray-200">{profile.fumante}</p>
                     </div>
                     <div>
-                        <h2 className="text-pink-400 font-bold">Interesse em</h2>
-                        <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
+                        <h2 className="text-pink-400 font-bold">Pets</h2>
+                        <p className="mt-1 text-gray-200">{profile.pets}</p>
                     </div>
                     <div>
-                        <h2 className="text-pink-400 font-bold">Objetivo</h2>
-                        <p className="mt-1 text-gray-200">{profile.relationshipGoal}</p>
+                        <h2 className="text-pink-400 font-bold">Idiomas</h2>
+                        <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
                     </div>
                 </div>
 

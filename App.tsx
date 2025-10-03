@@ -21,6 +21,7 @@ const App: React.FC = () => {
     const [matches, setMatches] = useState<UserProfile[]>([]);
     const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
     const [hasNewMatch, setHasNewMatch] = useState(false);
+    const [matchToChat, setMatchToChat] = useState<UserProfile | null>(null);
 
     useEffect(() => {
         // Mock fetching initial matches for logged in user
@@ -47,9 +48,11 @@ const App: React.FC = () => {
     };
 
     const openChatFromMatch = () => {
+        if (newMatch) {
+            setMatchToChat(newMatch);
+        }
         setNewMatch(null);
-        setView('matches');
-        // The Matches component will handle navigating to the chat window
+        setView('chat');
     };
 
     const renderContent = () => {
@@ -77,11 +80,17 @@ const App: React.FC = () => {
         let ComponentToRender;
         switch (view) {
             case 'explore':
-                ComponentToRender = <Explore onNewMatch={handleNewMatch} />;
+                ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;
                 break;
             case 'matches':
             case 'chat':
-                ComponentToRender = <Matches initialMatches={matches} currentView={view} setView={setView} />;
+                ComponentToRender = <Matches 
+                    initialMatches={matches} 
+                    currentView={view} 
+                    setView={setView}
+                    matchToChat={matchToChat}
+                    onChatOpened={() => setMatchToChat(null)}
+                />;
                 if (view === 'matches') setHasNewMatch(false); // Clear notification when viewing matches list
                 break;
             case 'my-profile':
@@ -97,7 +106,7 @@ const App: React.FC = () => {
                 ComponentToRender = <TopOfWeek />;
                 break;
             default:
-                ComponentToRender = <Explore onNewMatch={handleNewMatch} />;
+                ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;
         }
         
         return (

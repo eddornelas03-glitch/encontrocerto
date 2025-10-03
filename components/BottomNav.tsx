@@ -44,7 +44,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setCurrentVie
     ];
 
     return (
-        <nav className="absolute bottom-0 left-0 right-0 z-20 bg-gray-900/80 backdrop-blur-sm shrink-0">
+        <nav className="z-20 bg-gray-900/80 backdrop-blur-sm shrink-0">
             <div className="max-w-md mx-auto h-20 flex justify-around items-center border-t border-gray-700">
                 {views.map(({ name, title, icon: Icon }) => (
                     <button key={name} onClick={() => setCurrentView(name)} className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-pink-500" title={title}>

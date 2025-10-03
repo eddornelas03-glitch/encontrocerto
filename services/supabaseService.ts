@@ -11,6 +11,11 @@ const createMockProfiles = (count: number): UserProfile[] => {
   const portes: UserProfile['porteFisico'][] = ['Atlético', 'Normal', 'Robusto', 'Prefiro não dizer'];
   const fuma: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
   const bebe: UserProfile['consumoAlcool'][] = ['Não bebo', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
+  const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
+  const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra'];
+  const pets: UserProfile['pets'][] = ['Sim', 'Não'];
+  const idiomas = [['Português'], ['Português', 'Inglês'], ['Português', 'Espanhol']];
+  const disponibilidades: UserProfile['disponibilidade'][] = ['Hoje', 'Essa semana', 'Online por enquanto', 'Sem pressa'];
 
   return Array.from({ length: count }, (_, i) => {
     const [name, gender] = names[i % names.length];
@@ -39,11 +44,16 @@ const createMockProfiles = (count: number): UserProfile[] => {
       diasPreferenciais: i % 2 === 0 ? ['Fim de semana'] : ['Dias de semana', 'Fim de semana'],
       horariosPreferenciais: i % 3 === 0 ? ['Noite'] : ['Tarde', 'Noite'],
       numLikes: Math.floor(Math.random() * 500),
+      signo: signos[i % signos.length],
+      religiao: religioes[i % religioes.length],
+      pets: pets[i % pets.length],
+      idiomas: idiomas[i % idiomas.length],
+      disponibilidade: disponibilidades[i % disponibilidades.length],
     };
   });
 };
 
-const mockProfiles = createMockProfiles(20);
+const mockProfiles = createMockProfiles(50);
 
 const defaultUserPreferences: UserPreferences = {
     distanciaMaxima: 100,
@@ -52,8 +62,13 @@ const defaultUserPreferences: UserPreferences = {
     alturaMinima: 165,
     alturaMaxima: 190,
     porteFisicoDesejado: ['Normal', 'Atlético'],
-    fumanteDesejado: ['Não'],
-    consumoAlcoolDesejado: ['Socialmente', 'Não bebo'],
+    fumanteDesejado: ['Não', 'Indiferente'],
+    consumoAlcoolDesejado: ['Socialmente', 'Não bebo', 'Indiferente'],
+    generoDesejado: 'Todos',
+    signoDesejado: [],
+    religiaoDesejada: [],
+    petsDesejado: 'Indiferente',
+    disponibilidadeDesejada: [],
 };
 
 const defaultUser: User = {
@@ -84,6 +99,11 @@ const defaultUser: User = {
         diasPreferenciais: ['Fim de semana'],
         horariosPreferenciais: ['Noite'],
         numLikes: 258,
+        signo: 'Virgem',
+        religiao: 'Agnóstico(a)',
+        pets: 'Não',
+        idiomas: ['Português', 'Inglês'],
+        disponibilidade: 'Essa semana',
     },
     preferences: defaultUserPreferences
 };
@@ -132,6 +152,11 @@ export const supabase = {
           diasPreferenciais: [],
           horariosPreferenciais: [],
           numLikes: 0,
+          signo: 'Indiferente',
+          religiao: 'Indiferente',
+          pets: 'Não',
+          idiomas: ['Português'],
+          disponibilidade: 'Sem pressa',
         },
         preferences: {
             distanciaMaxima: 50,
@@ -142,6 +167,11 @@ export const supabase = {
             porteFisicoDesejado: [],
             fumanteDesejado: [],
             consumoAlcoolDesejado: [],
+            generoDesejado: 'Todos',
+            signoDesejado: [],
+            religiaoDesejada: [],
+            petsDesejado: 'Indiferente',
+            disponibilidadeDesejada: [],
         }
       }
       currentUser = newUser;

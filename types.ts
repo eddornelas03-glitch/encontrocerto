@@ -4,9 +4,14 @@ export interface UserPreferences {
   idadeMaxima: number;
   alturaMinima: number; // in cm
   alturaMaxima: number; // in cm
-  porteFisicoDesejado: ('Atlético' | 'Normal' | 'Robusto')[];
-  fumanteDesejado: ('Não' | 'Socialmente' | 'Sim')[];
-  consumoAlcoolDesejado: ('Não bebo' | 'Socialmente' | 'Frequentemente')[];
+  porteFisicoDesejado: ('Atlético' | 'Normal' | 'Robusto' | 'Indiferente')[];
+  fumanteDesejado: ('Não' | 'Socialmente' | 'Sim' | 'Indiferente')[];
+  consumoAlcoolDesejado: ('Não bebo' | 'Socialmente' | 'Frequentemente' | 'Indiferente')[];
+  generoDesejado: ('Homens' | 'Mulheres' | 'Todos');
+  signoDesejado: string[]; // Array of zodiac signs, or empty for any
+  religiaoDesejada: string[]; // Array of religions, or empty for any
+  petsDesejado: ('Sim' | 'Não' | 'Indiferente');
+  disponibilidadeDesejada: string[]; // Array of availabilities, or empty for any
 }
 
 export interface UserProfile {
@@ -27,7 +32,6 @@ export interface UserProfile {
   showLikes: boolean;
   distanceFromUser: number; // in kilometers
 
-  // New fields
   altura: number; // in cm
   porteFisico: 'Atlético' | 'Normal' | 'Robusto' | 'Prefiro não dizer';
   fumante: 'Não' | 'Socialmente' | 'Sim' | 'Prefiro não dizer';
@@ -36,6 +40,13 @@ export interface UserProfile {
   diasPreferenciais: ('Dias de semana' | 'Fim de semana')[];
   horariosPreferenciais: ('Manhã' | 'Tarde' | 'Noite')[];
   numLikes: number;
+  
+  // New fields from user prompt
+  signo: string;
+  religiao: string;
+  pets: 'Sim' | 'Não';
+  idiomas: string[];
+  disponibilidade: 'Hoje' | 'Essa semana' | 'Online por enquanto' | 'Sem pressa';
 }
 
 export interface Message {
