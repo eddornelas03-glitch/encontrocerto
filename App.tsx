@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useAuth } from './context/AuthContext';
 import type { UserProfile, View } from './types';
 import { Landing } from './pages/Landing';
@@ -8,10 +8,18 @@ import { Explore } from './pages/Explore';
 import { Matches } from './pages/Matches';
 import { MyProfile } from './pages/MyProfile';
 import { EditProfile } from './pages/EditProfile';
-import { ImageGenerator } from './pages/ImageGenerator';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
 import { supabase } from './services/supabaseService';
+
+// Lazy load the ImageGenerator component for code splitting
+const ImageGenerator = lazy(() => import('./pages/ImageGenerator').then(module => ({ default: module.ImageGenerator })));
+
+const LoadingFallback: React.FC = () => (
+    <div className="h-full w-full flex justify-center items-center bg-gray-900">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
+    </div>
+);
 
 const App: React.FC = () => {
     const { session, user, loading, updateUser } = useAuth();
@@ -57,11 +65,7 @@ const App: React.FC = () => {
 
     const renderContent = () => {
         if (loading) {
-            return (
-                <div className="h-full w-full flex justify-center items-center bg-gray-900">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
-                </div>
-            );
+            return <LoadingFallback />;
         }
 
         if (!session || !user) {
@@ -112,7 +116,9 @@ const App: React.FC = () => {
         return (
             <div className="h-full w-full flex flex-col bg-gray-900">
                 <main className="flex-grow relative overflow-y-auto">
-                    {ComponentToRender}
+                    <Suspense fallback={<LoadingFallback />}>
+                        {ComponentToRender}
+                    </Suspense>
                 </main>
                 <BottomNav currentView={view} setCurrentView={setView} hasNewMatch={hasNewMatch} />
             </div>
