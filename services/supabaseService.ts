@@ -192,13 +192,22 @@ export const supabase = {
       }
       return { data: { session: mockSession }, error: null };
     },
-    async signInWithOAuth() {
-        await delay(500);
+    async signInWithOAuth({ provider }: { provider: 'google' }) {
+        console.log(`Simulando login com o provedor: ${provider}. Em uma aplicação real, você seria redirecionado.`);
+        // Aumenta o delay para simular o fluxo de redirecionamento do OAuth
+        await delay(1500);
+        
+        // Simula o login bem-sucedido com o usuário padrão
         currentUser = defaultUser;
         mockSession = { user: currentUser };
+
+        // Dispara o evento de mudança de estado de autenticação
         if (authStateChangeCallback) {
-            authStateChangeCallback('SIGNED_IN', mockSession);
+          authStateChangeCallback('SIGNED_IN', mockSession);
         }
+
+        // A API real do Supabase pode não resolver esta promessa se ocorrer um redirecionamento.
+        // Para o nosso mock, retornamos um estado de sucesso.
         return { data: { session: mockSession }, error: null };
     },
     async signOut() {

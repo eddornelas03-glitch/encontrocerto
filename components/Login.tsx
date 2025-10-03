@@ -29,8 +29,14 @@ export const Login: React.FC<LoginProps> = ({ onNavigateToRegister }) => {
     
     const handleGoogleSignIn = async () => {
         setLoading(true);
-        await supabase.auth.signInWithOAuth();
-        setLoading(false);
+        setError('');
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        if (error) {
+            setError("Falha ao conectar com o Google. Tente novamente.");
+            setLoading(false);
+        }
+        // On success, AuthProvider's onAuthStateChange handles navigation,
+        // so we don't need to setLoading(false) as the component will unmount.
     }
 
     return (
