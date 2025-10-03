@@ -14,22 +14,39 @@ interface MatchesProps {
 
 export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, setView, matchToChat, onChatOpened }) => {
     const { user } = useAuth();
-    const [activeChatMatch, setActiveChatMatch] = useState<UserProfile | null>(null);
+    const [activeChat, setActiveChat] = useState<UserProfile | null>(null);
     const [allMessages, setAllMessages] = useState<{ [matchId: number]: Message[] }>({});
-    const [cameFromExplore, setCameFromExplore] = useState(false);
+    const [isFromNewMatch, setIsFromNewMatch] = useState(false);
 
     useEffect(() => {
+        // This effect triggers opening a chat from the new match modal
         if (matchToChat && currentView === 'chat') {
-            openChatForMatch(matchToChat);
-            onChatOpened();
-            setCameFromExplore(true);
+            setActiveChat(matchToChat);
+            setIsFromNewMatch(true); // Flag that this chat was opened from the modal
+            
+            // Initialize messages if they don't exist
+            if (!allMessages[matchToChat.id]) {
+                setAllMessages(prev => ({
+                    ...prev,
+                    [matchToChat.id]: [{
+                        id: Date.now(),
+                        senderId: 'system',
+                        text: `Você deu match com ${matchToChat.name}. Diga oi!`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    }]
+                }));
+            }
+            onChatOpened(); // Notify App.tsx that the prop has been consumed
         }
-    }, [matchToChat, currentView]);
+    }, [matchToChat, currentView, onChatOpened, allMessages]);
 
-    const openChatForMatch = (match: UserProfile) => {
-        setActiveChatMatch(match);
+    const handleSelectMatchFromList = (match: UserProfile) => {
+        setActiveChat(match);
+        setIsFromNewMatch(false); // This chat was opened from the list
+        
+        // Initialize messages if they don't exist
         if (!allMessages[match.id]) {
-            setAllMessages(prev => ({
+             setAllMessages(prev => ({
                 ...prev,
                 [match.id]: [{
                     id: Date.now(),
@@ -39,55 +56,43 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
                 }]
             }));
         }
-    };
-
-    const handleSelectMatchFromList = (match: UserProfile) => {
-        setCameFromExplore(false);
-        openChatForMatch(match);
         setView('chat');
     };
 
     const handleBackFromChat = () => {
-        setActiveChatMatch(null);
-        if (cameFromExplore) {
-            setView('explore');
-            setCameFromExplore(false);
-        } else {
-            setView('matches');
-        }
+        const targetView = isFromNewMatch ? 'explore' : 'matches';
+        setActiveChat(null);
+        setIsFromNewMatch(false);
+        setView(targetView);
     };
 
     const addMessageToChat = (matchId: number, message: Message) => {
         setAllMessages(prev => {
             const currentMessages = prev[matchId] || [];
-            return {
-                ...prev,
-                [matchId]: [...currentMessages, message]
-            };
+            return { ...prev, [matchId]: [...currentMessages, message] };
         });
     };
     
     const handleSendMessage = (text: string) => {
-        if (!user || !activeChatMatch) return;
-        
+        if (!user || !activeChat) return;
         const newMessage: Message = {
             id: Date.now(),
             senderId: user.id,
             text: text,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
-        addMessageToChat(activeChatMatch.id, newMessage);
+        addMessageToChat(activeChat.id, newMessage);
     };
 
     const handleSendSystemMessage = (text: string) => {
-        if (!activeChatMatch) return;
+        if (!activeChat) return;
         const systemMessage: Message = {
             id: Date.now(),
             senderId: 'system',
             text: text,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
-        addMessageToChat(activeChatMatch.id, systemMessage);
+        addMessageToChat(activeChat.id, systemMessage);
     };
 
     if (!user) {
@@ -98,14 +103,12 @@ export const Matches: React.FC<MatchesProps> = ({ initialMatches, currentView, s
         );
     }
     
-    const shouldShowChat = currentView === 'chat' && activeChatMatch;
-
-    if (shouldShowChat) {
+    if (currentView === 'chat' && activeChat) {
         return <ChatWindow 
-                    match={activeChatMatch} 
+                    match={activeChat} 
                     onBack={handleBackFromChat} 
                     currentUser={user}
-                    messages={allMessages[activeChatMatch.id] || []}
+                    messages={allMessages[activeChat.id] || []}
                     onSendMessage={handleSendMessage}
                     onSendSystemMessage={handleSendSystemMessage}
                 />;
