@@ -6,12 +6,13 @@ export interface UserPreferences {
   alturaMaxima: number; // in cm
   porteFisicoDesejado: ('Atlético' | 'Normal' | 'Robusto' | 'Indiferente')[];
   fumanteDesejado: ('Não' | 'Socialmente' | 'Sim' | 'Indiferente')[];
-  consumoAlcoolDesejado: ('Não bebo' | 'Socialmente' | 'Frequentemente' | 'Indiferente')[];
+  consumoAlcoolDesejado: ('Não bebe' | 'Socialmente' | 'Frequentemente' | 'Indiferente')[];
   generoDesejado: ('Homens' | 'Mulheres' | 'Todos');
   signoDesejado: string[]; // Array of zodiac signs, or empty for any
   religiaoDesejada: string[]; // Array of religions, or empty for any
   petsDesejado: ('Sim' | 'Não' | 'Indiferente');
   disponibilidadeDesejada: string[]; // Array of availabilities, or empty for any
+  nomeDesejado: string;
 }
 
 export interface UserProfile {
@@ -35,7 +36,7 @@ export interface UserProfile {
   altura: number; // in cm
   porteFisico: 'Atlético' | 'Normal' | 'Robusto' | 'Prefiro não dizer';
   fumante: 'Não' | 'Socialmente' | 'Sim' | 'Prefiro não dizer';
-  consumoAlcool: 'Não bebo' | 'Socialmente' | 'Frequentemente' | 'Prefiro não dizer';
+  consumoAlcool: 'Não bebe' | 'Socialmente' | 'Frequentemente' | 'Prefiro não dizer';
   interesseEm: 'Homens' | 'Mulheres' | 'Todos';
   diasPreferenciais: ('Dias de semana' | 'Fim de semana')[];
   horariosPreferenciais: ('Manhã' | 'Tarde' | 'Noite')[];

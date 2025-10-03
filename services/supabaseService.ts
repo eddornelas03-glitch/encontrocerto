@@ -10,7 +10,7 @@ const createMockProfiles = (count: number): UserProfile[] => {
   const interests = [['Praia', 'Cinema', 'Cozinhar'], ['Trilhas', 'Fotografia', 'Rock'], ['Leitura', 'Yoga', 'Vinho'], ['Games', 'Séries', 'Pizza']];
   const portes: UserProfile['porteFisico'][] = ['Atlético', 'Normal', 'Robusto', 'Prefiro não dizer'];
   const fuma: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
-  const bebe: UserProfile['consumoAlcool'][] = ['Não bebo', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
+  const bebe: UserProfile['consumoAlcool'][] = ['Não bebe', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
   const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
   const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra'];
   const pets: UserProfile['pets'][] = ['Sim', 'Não'];
@@ -63,12 +63,13 @@ const defaultUserPreferences: UserPreferences = {
     alturaMaxima: 190,
     porteFisicoDesejado: ['Normal', 'Atlético'],
     fumanteDesejado: ['Não', 'Indiferente'],
-    consumoAlcoolDesejado: ['Socialmente', 'Não bebo', 'Indiferente'],
+    consumoAlcoolDesejado: ['Socialmente', 'Não bebe', 'Indiferente'],
     generoDesejado: 'Todos',
     signoDesejado: [],
     religiaoDesejada: [],
     petsDesejado: 'Indiferente',
     disponibilidadeDesejada: [],
+    nomeDesejado: '',
 };
 
 const defaultUser: User = {
@@ -172,6 +173,7 @@ export const supabase = {
             religiaoDesejada: [],
             petsDesejado: 'Indiferente',
             disponibilidadeDesejada: [],
+            nomeDesejado: '',
         }
       };
       

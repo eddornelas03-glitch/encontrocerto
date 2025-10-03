@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabaseService';
-import type { UserProfile, User, View } from '../types';
+import type { UserProfile, User, View, UserPreferences } from '../types';
 import { ProfileCard } from '../components/ProfileCard';
 import { AdModal } from '../components/AdModal';
+import { FilterModal } from '../components/FilterModal';
 import { useAuth } from '../context/AuthContext';
 
 interface ExploreProps {
@@ -12,37 +13,57 @@ interface ExploreProps {
 
 const SettingsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-        <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.946 1.55l-.29 1.087a21.531 21.531 0 00-1.683.926l-1.056-.422a1.875 1.875 0 00-2.032.588l-1.405 2.435a1.875 1.875 0 00.588 2.76l.95.694a21.032 21.032 0 000 1.816l-.95.694a1.875 1.875 0 00-.588 2.76l1.405 2.435a1.875 1.875 0 002.032.588l1.056-.422a21.531 21.531 0 001.683.926l.29 1.087c.247.887 1.029 1.55 1.946 1.55h1.844c.917 0 1.699-.663 1.946-1.55l.29-1.087a21.531 21.531 0 001.683-.926l1.056.422a1.875 1.875 0 002.032-.588l1.405-2.435a1.875 1.875 0 00-.588-2.76l-.95-.694a21.032 21.032 0 000-1.816l.95-.694a1.875 1.875 0 00.588-2.76l-1.405-2.435a1.875 1.875 0 00-2.032-.588l-1.056.422a21.531 21.531 0 00-1.683-.926l-.29-1.087a1.875 1.875 0 00-1.946-1.55h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.946 1.55l-.29 1.087a21.531 21.531 0 00-1.683.926l-1.056-.422a1.875 1.875 0 00-2.032.588l-1.405 2.435a1.875 1.875 0 00.588 2.76l.95.694a21.032 21.032 0 000 1.816l-.95.694a1.875 1.875 0 00-.588 2.76l1.405 2.435a1.875 1.875 0 002.032.588l1.056-.422a21.531 21.531 0 001.683.926l.29 1.087c.247.887 1.029 1.55 1.946 1.55h1.844c.917 0 1.699-.663 1.946-1.55l.29-1.087a21.531 21.531 0 001.683.926l1.056.422a1.875 1.875 0 002.032-.588l1.405-2.435a1.875 1.875 0 00-.588-2.76l-.95-.694a21.032 21.032 0 000-1.816l.95.694a1.875 1.875 0 00.588-2.76l-1.405-2.435a1.875 1.875 0 00-2.032-.588l-1.056.422a21.531 21.531 0 00-1.683.926l-.29-1.087a1.875 1.875 0 00-1.946-1.55h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
     </svg>
 );
 
 const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
     const prefs = currentUser.preferences;
 
+    // Filter by who the current user is interested in (from their own profile)
     if (currentUser.profile.interesseEm !== 'Todos') {
         if (currentUser.profile.interesseEm === 'Homens' && profile.gender !== 'Homem') return false;
         if (currentUser.profile.interesseEm === 'Mulheres' && profile.gender !== 'Mulher') return false;
     }
+    
+    // Filter by the desired gender preference from filters
+    if (prefs.generoDesejado !== 'Todos') {
+        if (prefs.generoDesejado === 'Homens' && profile.gender !== 'Homem') return false;
+        if (prefs.generoDesejado === 'Mulheres' && profile.gender !== 'Mulher') return false;
+    }
+
+    // Name search (only works for public profiles)
+    if (prefs.nomeDesejado && prefs.nomeDesejado.trim() !== '') {
+        if (!profile.isPubliclySearchable || !profile.apelido.toLowerCase().includes(prefs.nomeDesejado.trim().toLowerCase())) {
+            return false;
+        }
+    }
 
     if (profile.age < prefs.idadeMinima || profile.age > prefs.idadeMaxima) return false;
     if (profile.distanceFromUser > prefs.distanciaMaxima) return false;
+    if (profile.altura < prefs.alturaMinima || profile.altura > prefs.alturaMaxima) return false;
 
     if (prefs.fumanteDesejado.length > 0 && !prefs.fumanteDesejado.includes('Indiferente')) {
-        // FIX: Explicitly handle 'Prefiro não dizer' to narrow the type for the `.includes` check and prevent a TypeScript error.
-        if (profile.fumante === 'Prefiro não dizer') return false;
-        if (!prefs.fumanteDesejado.includes(profile.fumante)) return false;
+        if (profile.fumante === 'Prefiro não dizer' || !prefs.fumanteDesejado.includes(profile.fumante)) return false;
     }
 
     if (prefs.consumoAlcoolDesejado.length > 0 && !prefs.consumoAlcoolDesejado.includes('Indiferente')) {
-        // FIX: Explicitly handle 'Prefiro não dizer' to narrow the type for the `.includes` check and prevent a TypeScript error.
-        if (profile.consumoAlcool === 'Prefiro não dizer') return false;
-        if (!prefs.consumoAlcoolDesejado.includes(profile.consumoAlcool)) return false;
+        if (profile.consumoAlcool === 'Prefiro não dizer' || !prefs.consumoAlcoolDesejado.includes(profile.consumoAlcool)) return false;
+    }
+    
+    if (prefs.porteFisicoDesejado.length > 0 && !prefs.porteFisicoDesejado.includes('Indiferente')) {
+        if (profile.porteFisico === 'Prefiro não dizer' || !prefs.porteFisicoDesejado.includes(profile.porteFisico)) return false;
     }
     
     if (prefs.petsDesejado !== 'Indiferente' && profile.pets !== prefs.petsDesejado) return false;
 
+    if (prefs.signoDesejado.length > 0 && !prefs.signoDesejado.includes('Indiferente') && !prefs.signoDesejado.includes(profile.signo)) return false;
+
+    if (prefs.religiaoDesejada.length > 0 && !prefs.religiaoDesejada.includes('Indiferente') && !prefs.religiaoDesejada.includes(profile.religiao)) return false;
+
     return true;
 };
+
 
 const calculateCompatibility = (profile: UserProfile, currentUser: User): number => {
     let score = 0;
@@ -77,11 +98,13 @@ const calculateCompatibility = (profile: UserProfile, currentUser: User): number
 
 
 export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [showAd, setShowAd] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
+    const [keyboardSwipe, setKeyboardSwipe] = useState<'left' | 'right' | 'super' | 'reset' | null>(null);
 
     const loadAndFilterProfiles = useCallback(async () => {
         if (!user) return;
@@ -106,7 +129,7 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
         loadAndFilterProfiles();
     }, [loadAndFilterProfiles]);
 
-    const handleSwipe = (direction: 'left' | 'right' | 'super') => {
+    const handleSwipe = useCallback((direction: 'left' | 'right' | 'super') => {
         if (currentIndex >= profiles.length) return;
         
         if (direction === 'super') {
@@ -126,8 +149,9 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
                 }
             }
             setCurrentIndex(prevIndex => prevIndex + 1);
-        }, 300);
-    };
+            setKeyboardSwipe(null);
+        }, 400);
+    }, [currentIndex, onNewMatch, profiles]);
     
     const handleAdClose = (watched: boolean) => {
         setShowAd(false);
@@ -135,9 +159,48 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
             const currentProfile = profiles[currentIndex];
             // Super likes always result in a match in this mock
             onNewMatch(currentProfile);
-            setCurrentIndex(prevIndex => prevIndex + 1);
+             setTimeout(() => {
+                setCurrentIndex(prevIndex => prevIndex + 1);
+                setKeyboardSwipe(null);
+            }, 400);
+        } else {
+            // Ad was cancelled, trigger a reset animation on the card
+            setKeyboardSwipe('reset');
+            // After animation, clear the trigger state
+            setTimeout(() => setKeyboardSwipe(null), 400);
         }
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Prevent actions if a modal is open, loading, or another swipe is in progress
+            if (showAd || showFilters || keyboardSwipe || isLoading || currentIndex >= profiles.length) {
+                return;
+            }
+
+            if (e.key === 'ArrowRight') {
+                setKeyboardSwipe('right');
+            } else if (e.key === 'ArrowLeft') {
+                setKeyboardSwipe('left');
+            } else if (e.key === 'ArrowUp') {
+                setKeyboardSwipe('super');
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showAd, showFilters, keyboardSwipe, isLoading, currentIndex, profiles.length]);
+
+
+    const handleSaveFilters = (newPreferences: UserPreferences) => {
+        if (user) {
+            updateUser({ ...user, preferences: newPreferences });
+        }
+        setShowFilters(false);
+    };
+
 
     const renderContent = () => {
         if (isLoading) {
@@ -154,7 +217,7 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
                  <div className="flex flex-col justify-center items-center h-full text-center text-white px-6">
                     <h2 className="text-2xl font-bold">Nenhum perfil encontrado!</h2>
                     <p className="mt-2 text-gray-300">Tente ajustar seus filtros de busca para encontrar mais pessoas.</p>
-                     <button onClick={() => setView('edit-profile')} className="mt-6 bg-pink-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors">
+                     <button onClick={() => setShowFilters(true)} className="mt-6 bg-pink-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors">
                         Ajustar Filtros
                     </button>
                  </div>
@@ -169,6 +232,7 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
                        profile={profile}
                        onSwipe={handleSwipe}
                        isTopCard={isTopCard}
+                       triggerSwipe={isTopCard ? keyboardSwipe : null}
                    />
                </div>
            );
@@ -177,14 +241,15 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch, setView }) => {
     
     return (
         <div className="relative w-full h-full flex-grow">
-            <header className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent">
+            <header className="absolute top-0 left-0 right-0 z-30 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent">
                 <h1 className="text-2xl font-bold text-white drop-shadow-lg">Explorar</h1>
-                <button onClick={() => setView('edit-profile')} className="text-white p-2 bg-white/10 rounded-full backdrop-blur-sm hover:bg-white/20" aria-label="Ajustar filtros">
+                <button onClick={() => setShowFilters(true)} className="text-white p-2 bg-white/10 rounded-full backdrop-blur-sm hover:bg-white/20" aria-label="Ajustar filtros">
                     <SettingsIcon />
                 </button>
             </header>
             {renderContent()}
             {showAd && <AdModal onClose={handleAdClose} />}
+            {showFilters && user && <FilterModal key={user.preferences.distanciaMaxima} onClose={() => setShowFilters(false)} onSave={handleSaveFilters} />}
         </div>
     );
 };

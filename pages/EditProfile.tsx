@@ -43,18 +43,13 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
     const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes', 'Indiferente'];
     const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra', 'Indiferente'];
     const fumanteOptions: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
-    const consumoAlcoolOptions: UserProfile['consumoAlcool'][] = ['Não bebo', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
+    const consumoAlcoolOptions: UserProfile['consumoAlcool'][] = ['Não bebe', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
     
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: name === 'age' || name === 'altura' || name === 'numLikes' ? Number(value) : value }));
     };
     
-    const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setPreferences(prev => ({ ...prev, [name]: (name.includes('idade') || name.includes('distancia')) ? Number(value) : value }));
-    };
-
     const handleSave = async () => {
         if (isSaving) return;
         setIsSaving(true);
@@ -225,7 +220,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                     </div>
                 </FormSection>
 
-                <FormSection title="Preferências de Busca (Privado)">
+                <FormSection title="Preferências">
                     <div>
                         <Label htmlFor="interesseEm">Tenho interesse em</Label>
                          <Select id="interesseEm" name="interesseEm" value={profile.interesseEm} onChange={handleProfileChange}>
@@ -234,43 +229,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                             <option>Todos</option>
                         </Select>
                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                         <div>
-                            <Label htmlFor="idadeMinima">Idade Mínima</Label>
-                            <Input type="number" id="idadeMinima" name="idadeMinima" value={preferences.idadeMinima} onChange={handlePreferenceChange} />
-                        </div>
-                        <div>
-                            <Label htmlFor="idadeMaxima">Idade Máxima</Label>
-                            <Input type="number" id="idadeMaxima" name="idadeMaxima" value={preferences.idadeMaxima} onChange={handlePreferenceChange} />
-                        </div>
-                         <div>
-                            <Label htmlFor="distanciaMaxima">Distância Máxima (km)</Label>
-                            <Input type="number" id="distanciaMaxima" name="distanciaMaxima" value={preferences.distanciaMaxima} onChange={handlePreferenceChange} />
-                        </div>
-                    </div>
-                     <div className="mt-4">
-                        <Label htmlFor="fumanteDesejado">Preferência de fumante</Label>
-                        <Select id="fumanteDesejado" name="fumanteDesejado" value={preferences.fumanteDesejado[0] || 'Indiferente'} onChange={e => setPreferences(p => ({...p, fumanteDesejado: [e.target.value as any]}))}>
-                            <option>Indiferente</option>
-                            {fumanteOptions.filter(o => o !== 'Prefiro não dizer').map(o => <option key={o}>{o}</option>)}
-                        </Select>
-                    </div>
-                     <div className="mt-4">
-                        <Label htmlFor="consumoAlcoolDesejado">Preferência de álcool</Label>
-                        <Select id="consumoAlcoolDesejado" name="consumoAlcoolDesejado" value={preferences.consumoAlcoolDesejado[0] || 'Indiferente'} onChange={e => setPreferences(p => ({...p, consumoAlcoolDesejado: [e.target.value as any]}))}>
-                             <option>Indiferente</option>
-                            {consumoAlcoolOptions.filter(o => o !== 'Prefiro não dizer').map(o => <option key={o}>{o}</option>)}
-                        </Select>
-                    </div>
-                     <div className="mt-4">
-                        <Label htmlFor="petsDesejado">Preferência de pets</Label>
-                        <Select id="petsDesejado" name="petsDesejado" value={preferences.petsDesejado} onChange={handlePreferenceChange}>
-                            <option>Indiferente</option>
-                            <option>Sim</option>
-                            <option>Não</option>
-                        </Select>
-                    </div>
                 </FormSection>
+
 
                 <FormSection title="Privacidade">
                     <div>
