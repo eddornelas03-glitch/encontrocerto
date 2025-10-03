@@ -5,6 +5,7 @@ import { supabase } from '../services/supabaseService';
 interface RegisterProps {
   onNavigateToLogin: () => void;
   onNavigateToGoogleLogin: () => void;
+  onBackToLanding: () => void;
 }
 
 const MailIcon = () => (
@@ -18,7 +19,7 @@ const GoogleIcon = () => (
 );
 
 
-export const Register: React.FC<RegisterProps> = ({ onNavigateToLogin, onNavigateToGoogleLogin }) => {
+export const Register: React.FC<RegisterProps> = ({ onNavigateToLogin, onNavigateToGoogleLogin, onBackToLanding }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -75,7 +76,16 @@ export const Register: React.FC<RegisterProps> = ({ onNavigateToLogin, onNavigat
     }
 
     return (
-        <div className="h-full w-full flex flex-col justify-center items-center p-8 text-white bg-gray-900 overflow-y-auto">
+        <div className="relative h-full w-full flex flex-col justify-center items-center p-8 text-white bg-gray-900 overflow-y-auto">
+            <button 
+                onClick={onBackToLanding} 
+                className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-10"
+                aria-label="Voltar"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
             <div className="w-full max-w-sm">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-bold">Criar Conta Grátis</h1>

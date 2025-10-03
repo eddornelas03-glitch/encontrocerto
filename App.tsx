@@ -125,15 +125,16 @@ const App: React.FC = () => {
 
         if (!session || !user) {
             let AuthComponent;
+            const handleBackToLanding = () => setAuthView('landing');
             switch (authView) {
                 case 'google-login':
                     AuthComponent = <FakeGoogleLogin onSuccess={handleGoogleLoginSuccess} />;
                     break;
                 case 'login':
-                    AuthComponent = <Login onNavigateToRegister={() => setAuthView('register')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    AuthComponent = <Login onNavigateToRegister={() => setAuthView('register')} onNavigateToGoogleLogin={() => setAuthView('google-login')} onBackToLanding={handleBackToLanding} />;
                     break;
                 case 'register':
-                    AuthComponent = <Register onNavigateToLogin={() => setAuthView('login')} onNavigateToGoogleLogin={() => setAuthView('google-login')} />;
+                    AuthComponent = <Register onNavigateToLogin={() => setAuthView('login')} onNavigateToGoogleLogin={() => setAuthView('google-login')} onBackToLanding={handleBackToLanding} />;
                     break;
                 case 'landing':
                 default:
