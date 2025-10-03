@@ -49,6 +49,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
     const [isDragging, setIsDragging] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const positionRef = useRef({ x: 0, y: 0 });
     const [rotation, setRotation] = useState(0);
     const [transition, setTransition] = useState('transform 0.3s ease-out');
     const [actionOpacities, setActionOpacities] = useState({ like: 0, nope: 0, super: 0 });
@@ -80,6 +81,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         const deltaX = currentPos.x - startPos.x;
         const deltaY = currentPos.y - startPos.y;
         
+        positionRef.current = { x: deltaX, y: deltaY };
         setPosition({ x: deltaX, y: deltaY });
         setRotation(deltaX / 20);
 
@@ -96,21 +98,24 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         setActionOpacities({ like: 0, nope: 0, super: 0 });
         setTransition('transform 0.3s ease-out');
         
-        if (position.x > SWIPE_THRESHOLD) {
-            setPosition({ x: window.innerWidth, y: position.y });
+        const finalPosition = positionRef.current;
+
+        if (finalPosition.x > SWIPE_THRESHOLD) {
+            setPosition({ x: window.innerWidth, y: finalPosition.y });
             setRotation(30);
             onSwipe('right');
-        } else if (position.x < -SWIPE_THRESHOLD) {
-            setPosition({ x: -window.innerWidth, y: position.y });
+        } else if (finalPosition.x < -SWIPE_THRESHOLD) {
+            setPosition({ x: -window.innerWidth, y: finalPosition.y });
             setRotation(-30);
             onSwipe('left');
-        } else if (position.y < SUPER_SWIPE_THRESHOLD) {
-            setPosition({ x: position.x, y: -window.innerHeight });
+        } else if (finalPosition.y < SUPER_SWIPE_THRESHOLD) {
+            setPosition({ x: finalPosition.x, y: -window.innerHeight });
             onSwipe('super');
         } else {
             setPosition({ x: 0, y: 0 });
             setRotation(0);
         }
+        positionRef.current = { x: 0, y: 0 };
     };
     
     const handleClick = () => {

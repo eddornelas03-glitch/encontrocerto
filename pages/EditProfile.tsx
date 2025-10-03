@@ -15,8 +15,8 @@ const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({ t
     </div>
 );
 
-const Label: React.FC<{ htmlFor: string; children: React.ReactNode }> = ({ htmlFor, children }) => (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-300 mb-1">{children}</label>
+const Label: React.FC<{ htmlFor?: string; children: React.ReactNode; className?: string }> = ({ htmlFor, children, className }) => (
+    <label htmlFor={htmlFor} className={`block text-sm font-medium text-gray-300 mb-1 ${className}`}>{children}</label>
 );
 
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -25,6 +25,24 @@ const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
 
 const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
     <select {...props} className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white" />
+);
+
+const CheckboxGroup: React.FC<{ title: string; options: readonly string[]; selected: string[]; onChange: (option: string) => void; }> = ({ title, options, selected, onChange }) => (
+    <div>
+        <Label className="mb-2">{title}</Label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {options.map(option => (
+                <button
+                    key={option}
+                    type="button"
+                    onClick={() => onChange(option)}
+                    className={`text-sm py-2 px-3 rounded-full border transition-colors ${selected.includes(option) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-800 border-gray-600 hover:border-pink-500'}`}
+                >
+                    {option}
+                </button>
+            ))}
+        </div>
+    </div>
 );
 
 export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) => {
@@ -46,6 +64,11 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
     const fumanteOptions: UserProfile['fumante'][] = ['Não', 'Socialmente', 'Sim', 'Prefiro não dizer'];
     const consumoAlcoolOptions: UserProfile['consumoAlcool'][] = ['Não bebe', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
     
+    // Options for preferences
+    const porteFisicoOptions = ['Atlético', 'Normal', 'Robusto', 'Indiferente'];
+    const prefFumanteOptions = ['Não', 'Socialmente', 'Sim', 'Indiferente'];
+    const prefConsumoAlcoolOptions = ['Não bebe', 'Socialmente', 'Frequentemente', 'Indiferente'];
+
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: name === 'age' || name === 'altura' || name === 'numLikes' ? Number(value) : value }));
@@ -57,6 +80,34 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                 ? prev.interests.filter(i => i !== interest)
                 : [...prev.interests, interest];
             return { ...prev, interests };
+        });
+    };
+    
+    const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setPreferences(prev => ({ ...prev, [name]: (name.includes('idade') || name.includes('distancia') || name.includes('altura')) ? Number(value) : value }));
+    };
+
+    const handleMultiSelectPreferenceChange = (field: keyof UserPreferences, value: string) => {
+        setPreferences(prev => {
+            const currentValues = (prev[field] as string[]) || [];
+            let newValues: string[];
+
+            if (value === 'Indiferente') {
+                newValues = currentValues.includes('Indiferente') ? [] : ['Indiferente'];
+            } else {
+                const valuesWithoutIndiferente = currentValues.filter(item => item !== 'Indiferente');
+                if (valuesWithoutIndiferente.includes(value)) {
+                    newValues = valuesWithoutIndiferente.filter(item => item !== value);
+                } else {
+                    newValues = [...valuesWithoutIndiferente, value];
+                }
+            }
+            
+            if (newValues.length === 0) {
+                newValues = ['Indiferente'];
+            }
+            return { ...prev, [field]: newValues };
         });
     };
 
@@ -220,6 +271,14 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                                 <option>Não tenho certeza</option>
                             </Select>
                         </div>
+                        <div>
+                            <Label htmlFor="interesseEm">Tenho interesse em</Label>
+                             <Select id="interesseEm" name="interesseEm" value={profile.interesseEm} onChange={handleProfileChange}>
+                                <option>Homens</option>
+                                <option>Mulheres</option>
+                                <option>Todos</option>
+                            </Select>
+                        </div>
                     </div>
                 </FormSection>
 
@@ -244,14 +303,61 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                         </div>
                     </div>
                 </FormSection>
-
-                <FormSection title="Preferências">
+                
+                <FormSection title="Preferências para o Par Perfeito">
                     <div>
-                        <Label htmlFor="interesseEm">Tenho interesse em</Label>
-                         <Select id="interesseEm" name="interesseEm" value={profile.interesseEm} onChange={handleProfileChange}>
-                            <option>Homens</option>
-                            <option>Mulheres</option>
-                            <option>Todos</option>
+                        <Label htmlFor="generoDesejado">Mostrar perfis de</Label>
+                        <Select id="generoDesejado" name="generoDesejado" value={preferences.generoDesejado} onChange={handlePreferenceChange}>
+                            <option value="Todos">Todos</option>
+                            <option value="Homens">Homens</option>
+                            <option value="Mulheres">Mulheres</option>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <Label>Distância Máxima: <span className="font-bold text-pink-400">{preferences.distanciaMaxima} km</span></Label>
+                        <input
+                            id="distanciaMaxima"
+                            name="distanciaMaxima"
+                            type="range"
+                            min="1"
+                            max="500"
+                            value={preferences.distanciaMaxima}
+                            onChange={handlePreferenceChange}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                        />
+                    </div>
+                    
+                    <div>
+                        <Label>Faixa de Idade</Label>
+                        <div className="flex items-center gap-4">
+                            <Input type="number" name="idadeMinima" value={preferences.idadeMinima} onChange={handlePreferenceChange} className="text-center" />
+                            <span className="text-gray-400">até</span>
+                            <Input type="number" name="idadeMaxima" value={preferences.idadeMaxima} onChange={handlePreferenceChange} className="text-center" />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <Label>Faixa de Altura (cm)</Label>
+                        <div className="flex items-center gap-4">
+                            <Input type="number" name="alturaMinima" placeholder="Mínima" value={preferences.alturaMinima} onChange={handlePreferenceChange} className="text-center" />
+                             <span className="text-gray-400">até</span>
+                            <Input type="number" name="alturaMaxima" placeholder="Máxima" value={preferences.alturaMaxima} onChange={handlePreferenceChange} className="text-center" />
+                        </div>
+                    </div>
+
+                    <CheckboxGroup title="Porte Físico" options={porteFisicoOptions} selected={preferences.porteFisicoDesejado} onChange={(v) => handleMultiSelectPreferenceChange('porteFisicoDesejado', v)} />
+                    <CheckboxGroup title="Hábito de Fumar" options={prefFumanteOptions} selected={preferences.fumanteDesejado} onChange={(v) => handleMultiSelectPreferenceChange('fumanteDesejado', v)} />
+                    <CheckboxGroup title="Consumo de Álcool" options={prefConsumoAlcoolOptions} selected={preferences.consumoAlcoolDesejado} onChange={(v) => handleMultiSelectPreferenceChange('consumoAlcoolDesejado', v)} />
+                    <CheckboxGroup title="Signo" options={signos} selected={preferences.signoDesejado} onChange={(v) => handleMultiSelectPreferenceChange('signoDesejado', v)} />
+                    <CheckboxGroup title="Religião" options={religioes} selected={preferences.religiaoDesejada} onChange={(v) => handleMultiSelectPreferenceChange('religiaoDesejada', v)} />
+
+                    <div>
+                        <Label htmlFor="petsDesejado">Tem Pets?</Label>
+                        <Select id="petsDesejado" name="petsDesejado" value={preferences.petsDesejado} onChange={handlePreferenceChange}>
+                            <option value="Indiferente">Indiferente</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
                         </Select>
                     </div>
                 </FormSection>

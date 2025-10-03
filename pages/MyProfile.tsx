@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import type { UserProfile, View } from '../types';
-import { supabase } from '../services/supabaseService';
+import type { UserProfile, View, UserPreferences } from '../types';
 
 interface MyProfileProps {
     setView: (view: View) => void;
-    onStartChat: (profile: UserProfile) => void;
 }
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
         <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
-        <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+        <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25-1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
     </svg>
 );
 
@@ -21,32 +19,28 @@ const HeartIcon = () => (
     </svg>
 );
 
-export const MyProfile: React.FC<MyProfileProps> = ({ setView, onStartChat }) => {
+const PreferenceItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div>
+        <h2 className="text-pink-400 font-bold">{label}</h2>
+        <p className="mt-1 text-gray-200">{value}</p>
+    </div>
+);
+
+export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
     const { user, signOut } = useAuth();
-    const [perfectMatch, setPerfectMatch] = useState<UserProfile | null>(null);
-    const [loadingMatch, setLoadingMatch] = useState(true);
-
-    useEffect(() => {
-        const findPerfectMatch = async () => {
-            // Em um aplicativo real, esta seria uma chamada de API específica.
-            // Aqui, simulamos buscando perfis públicos e escolhendo um.
-            const { data } = await supabase.fetchPublicProfiles(1);
-            if (data && data.length > 0) {
-                // Define artificialmente a compatibilidade como 100% para a demonstração
-                const match = { ...data[0], compatibility: 100 };
-                setPerfectMatch(match);
-            }
-            setLoadingMatch(false);
-        };
-
-        findPerfectMatch();
-    }, []);
 
     if (!user) {
         return <div className="p-4 text-white">Usuário não encontrado.</div>;
     }
 
-    const { profile } = user;
+    const { profile, preferences } = user;
+    
+    const formatArrayPreference = (arr: string[] | undefined) => {
+        if (!arr || arr.length === 0 || arr.includes('Indiferente')) {
+            return 'Indiferente';
+        }
+        return arr.join(', ');
+    };
 
     return (
         <div className="h-full w-full bg-gray-900 text-white overflow-y-auto pb-24">
@@ -73,30 +67,6 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView, onStartChat }) =>
                         <EditIcon/> Editar
                     </button>
                 </div>
-
-                {loadingMatch ? (
-                    <div className="text-center p-4 mt-8 bg-gray-800 rounded-lg">
-                        <p className="text-gray-400">Procurando seu par perfeito...</p>
-                    </div>
-                ) : perfectMatch ? (
-                    <div className="mt-8 bg-gradient-to-r from-pink-500/20 to-yellow-500/20 p-4 rounded-xl border border-pink-400/50 shadow-lg">
-                        <h2 className="text-xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-300 mb-3">Seu Par Perfeito!</h2>
-                        <div className="flex items-center gap-4">
-                            <img src={perfectMatch.images[0]} alt={perfectMatch.apelido} className="w-16 h-16 rounded-full object-cover border-2 border-white" />
-                            <div className="flex-1">
-                                <p className="font-semibold">{perfectMatch.apelido}, {perfectMatch.age}</p>
-                                <p className="text-sm text-gray-200">"Vocês são perfeitos um para o outro"</p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={() => onStartChat(perfectMatch)}
-                            className="mt-4 w-full bg-white/90 text-gray-900 font-bold py-2 px-4 rounded-full hover:bg-white transition-colors"
-                        >
-                            Iniciar Conversa
-                        </button>
-                    </div>
-                ) : null}
-
 
                 <div className="mt-8 border-t border-gray-700 pt-6">
                     <h2 className="text-pink-400 font-bold">Bio</h2>
@@ -170,6 +140,22 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView, onStartChat }) =>
                                 {profile.showLikes ? 'Ativado' : 'Desativado'}
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                 <div className="mt-6 border-t border-gray-700 pt-6">
+                    <h2 className="text-pink-400 font-bold text-lg mb-4">Preferências para o Par Perfeito</h2>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                        <PreferenceItem label="Gênero" value={preferences.generoDesejado} />
+                        <PreferenceItem label="Faixa de Idade" value={`${preferences.idadeMinima} - ${preferences.idadeMaxima} anos`} />
+                        <PreferenceItem label="Distância Máxima" value={`${preferences.distanciaMaxima} km`} />
+                        <PreferenceItem label="Faixa de Altura" value={`${preferences.alturaMinima} - ${preferences.alturaMaxima} cm`} />
+                        <PreferenceItem label="Porte Físico" value={formatArrayPreference(preferences.porteFisicoDesejado)} />
+                        <PreferenceItem label="Hábito de Fumar" value={formatArrayPreference(preferences.fumanteDesejado)} />
+                        <PreferenceItem label="Consumo de Álcool" value={formatArrayPreference(preferences.consumoAlcoolDesejado)} />
+                        <PreferenceItem label="Tem Pets?" value={preferences.petsDesejado} />
+                        <PreferenceItem label="Signo" value={formatArrayPreference(preferences.signoDesejado)} />
+                        <PreferenceItem label="Religião" value={formatArrayPreference(preferences.religiaoDesejada)} />
                     </div>
                 </div>
 
