@@ -148,6 +148,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                     <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                         <PreferenceItem label="Gênero" value={preferences.generoDesejado} />
                         <PreferenceItem label="Faixa de Idade" value={`${preferences.idadeMinima} - ${preferences.idadeMaxima} anos`} />
+                        <PreferenceItem label="Busca por Objetivo" value={formatArrayPreference(preferences.objetivoDesejado)} />
                         <PreferenceItem label="Distância Máxima" value={`${preferences.distanciaMaxima} km`} />
                         <PreferenceItem label="Faixa de Altura" value={`${preferences.alturaMinima} - ${preferences.alturaMaxima} cm`} />
                         <PreferenceItem label="Porte Físico" value={formatArrayPreference(preferences.porteFisicoDesejado)} />

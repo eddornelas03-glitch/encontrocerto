@@ -13,7 +13,7 @@ interface ExploreProps {
 
 const SettingsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-        <path d="M19.14,12.74c0.03-0.3,0.06-0.6,0.06-0.91s-0.03-0.61-0.06-0.91l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46c-0.12-0.22-0.39-0.3-0.61-0.22l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65C14.17,2.13,13.92,2,13.64,2h-4c-0.27,0-0.52,0.13-0.63,0.36L8.62,5.02C8,5.27,7.44,5.6,6.92,6.01L4.43,5.01C4.21,4.92,3.94,5,3.82,5.22l-2,3.46c-0.12,0.22-0.07,0.49,0.12,0.64l2.11,1.65C4.03,11.3,4,11.61,4,11.92s0.03,0.61,0.06,0.91l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46c0.12,0.22,0.39,0.3,0.61,0.22l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65c0.11,0.23,0.36,0.36,0.63,0.36h4c0.27,0,0.52-0.13,0.63-0.36l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1c0.22,0.08,0.49,0,0.61-0.22l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.14,12.74z M12,15.5c-1.93,0-3.5-1.57-3.5-3.5s1.57-3.5,3.5-3.5s3.5,1.57,3.5,3.5S13.93,15.5,12,15.5z"/>
+        <path d="M19.14,12.74c0.03-0.3,0.06-0.6,0.06-0.91s-0.03-0.61-0.06-0.91l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46c-0.12-0.22-0.39-0.3-0.61-0.22l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65C14.17,2.13,13.92,2,13.64,2h-4c-0.27,0-0.52,0.13-0.63,0.36L8.62,5.02C8,5.27,7.44,5.6,6.92,6.01L4.43,5.01C4.21,4.92,3.94,5,3.82,5.22l-2,3.46c-0.12,0.22-0.07,0.49,0.12,0.64l2.11,1.65C4.03,11.3,4,11.61,4,11.92s0.03,0.61,0.06,0.91l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46c0.12,0.22,0.39,0.3,0.61,0.22l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65c0.11,0.23,0.36,0.36,0.63,0.36h4c0.27,0,0.52-0.13,0.63,0.36l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1c0.22,0.08,0.49,0,0.61-0.22l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.14,12.74z M12,15.5c-1.93,0-3.5-1.57-3.5-3.5s1.57-3.5,3.5-3.5s3.5,1.57,3.5,3.5S13.93,15.5,12,15.5z"/>
     </svg>
 );
 
@@ -42,6 +42,10 @@ const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
     if (profile.age < prefs.idadeMinima || profile.age > prefs.idadeMaxima) return false;
     if (profile.distanceFromUser > prefs.distanciaMaxima) return false;
     if (profile.altura < prefs.alturaMinima || profile.altura > prefs.alturaMaxima) return false;
+
+    if (prefs.objetivoDesejado.length > 0 && !prefs.objetivoDesejado.includes('Indiferente')) {
+        if (!prefs.objetivoDesejado.includes(profile.relationshipGoal)) return false;
+    }
 
     if (prefs.fumanteDesejado.length > 0 && !prefs.fumanteDesejado.includes('Indiferente')) {
         if (profile.fumante === 'Prefiro não dizer' || !prefs.fumanteDesejado.includes(profile.fumante)) return false;
@@ -77,7 +81,9 @@ const calculateCompatibility = (profile: UserProfile, currentUser: User): number
     score += 3 * (sharedInterests.length / Math.max(1, userInterests.size));
 
     total++;
-    if (profile.relationshipGoal === currentUser.profile.relationshipGoal) score++;
+    if (currentUser.preferences.objetivoDesejado.length === 0 || currentUser.preferences.objetivoDesejado.includes('Indiferente') || currentUser.preferences.objetivoDesejado.includes(profile.relationshipGoal)) {
+        score++;
+    }
     
     total++;
     // FIX: Check for 'Prefiro não dizer' to avoid a type error with '.includes'.

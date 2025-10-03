@@ -70,6 +70,7 @@ const defaultUserPreferences: UserPreferences = {
     petsDesejado: 'Indiferente',
     disponibilidadeDesejada: [],
     nomeDesejado: '',
+    objetivoDesejado: ['Indiferente'],
 };
 
 const defaultUser: User = {
@@ -174,6 +175,7 @@ export const supabase = {
             petsDesejado: 'Indiferente',
             disponibilidadeDesejada: [],
             nomeDesejado: '',
+            objetivoDesejado: [],
         }
       };
       

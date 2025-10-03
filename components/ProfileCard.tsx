@@ -212,6 +212,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
 
     // Calculate matches for details view
     const prefs = currentUserPreferences;
+    const objetivoMatch = !prefs.objetivoDesejado || prefs.objetivoDesejado.length === 0 || prefs.objetivoDesejado.includes('Indiferente') || prefs.objetivoDesejado.includes(profile.relationshipGoal);
+    const ageMatch = profile.age >= prefs.idadeMinima && profile.age <= prefs.idadeMaxima;
     const signoMatch = prefs.signoDesejado.includes('Indiferente') || prefs.signoDesejado.includes(profile.signo);
     const religiaoMatch = prefs.religiaoDesejada.includes('Indiferente') || prefs.religiaoDesejada.includes(profile.religiao);
     const alturaMatch = profile.altura >= prefs.alturaMinima && profile.altura <= prefs.alturaMaxima;
@@ -281,60 +283,62 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         
         {/* Details View */}
         {showDetails && isTopCard && (
-            <div className="absolute inset-0 z-40 bg-gray-900/90 backdrop-blur-sm text-white overflow-y-auto">
-                <button onClick={() => setShowDetails(false)} className="sticky top-4 right-4 float-right text-white z-10 bg-black/20 rounded-full p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
-                </button>
-                <div className="p-5 pt-16">
+            <div className="absolute inset-0 z-40 bg-gray-900/90 backdrop-blur-sm text-white flex flex-col">
+                <header className="p-5 pb-4 shrink-0 relative bg-gray-900/50 shadow-md">
                     <h1 className="text-3xl font-bold">{profile.apelido}, <span className="font-light">{profile.age}</span></h1>
                     <p className="text-gray-300">{profile.city}, {profile.state}</p>
-                    
-                    <div className="mt-6">
-                        <div className="flex overflow-x-auto space-x-2 pb-2 -mx-5 px-5 snap-x snap-mandatory">
-                            {profile.images.map((img, index) => (
-                                <img 
-                                    key={index} 
-                                    src={img} 
-                                    alt={`${profile.name} ${index+1}`} 
-                                    className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
-                                    onClick={() => setSelectedImage(img)}
-                                />
-                            ))}
+                    <button onClick={() => setShowDetails(false)} className="absolute top-4 right-4 text-white z-10 bg-black/20 rounded-full p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                    </button>
+                </header>
+                
+                <div className="overflow-y-auto flex-1">
+                    <div className="p-5 pt-4 space-y-6">
+                        <div>
+                            <div className="flex overflow-x-auto space-x-2 pb-2 -mx-5 px-5 snap-x snap-mandatory">
+                                {profile.images.map((img, index) => (
+                                    <img 
+                                        key={index} 
+                                        src={img} 
+                                        alt={`${profile.name} ${index+1}`} 
+                                        className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
+                                        onClick={() => setSelectedImage(img)}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="mt-6 border-t border-gray-700 pt-4">
-                        <h2 className="text-pink-400 font-bold">Bio</h2>
-                        <p className="mt-1 text-gray-200">{profile.bio}</p>
-                    </div>
-                    <div className="mt-4">
-                        <h2 className="text-pink-400 font-bold">Interesses</h2>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                            {profile.interests.map(interest => (
-                                <span key={interest} className="bg-gray-700 text-gray-200 text-sm font-medium px-3 py-1 rounded-full">{interest}</span>
-                            ))}
+                        <div className="border-t border-gray-700 pt-4">
+                            <h2 className="text-pink-400 font-bold">Bio</h2>
+                            <p className="mt-1 text-gray-200">{profile.bio}</p>
                         </div>
-                    </div>
+                        <div>
+                            <h2 className="text-pink-400 font-bold">Interesses</h2>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {profile.interests.map(interest => (
+                                    <span key={interest} className="bg-gray-700 text-gray-200 text-sm font-medium px-3 py-1 rounded-full">{interest}</span>
+                                ))}
+                            </div>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6 mt-6 border-t border-gray-700 pt-6">
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Objetivo</h2>
-                            <p className="mt-1 text-gray-200">{profile.relationshipGoal}</p>
-                        </div>
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Interesse em</h2>
-                            <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
-                        </div>
-                        <DetailItem label="Signo" value={profile.signo} isMatch={signoMatch} />
-                        <DetailItem label="Religião" value={profile.religiao} isMatch={religiaoMatch} />
-                        <DetailItem label="Altura" value={`${profile.altura} cm`} isMatch={alturaMatch} />
-                        <DetailItem label="Corpo" value={profile.porteFisico} isMatch={corpoMatch} />
-                        <DetailItem label="Bebidas" value={profile.consumoAlcool} isMatch={bebidasMatch} />
-                        <DetailItem label="Fumo" value={profile.fumante} isMatch={fumoMatch} />
-                        <DetailItem label="Pets" value={profile.pets} isMatch={petsMatch} />
-                        <div>
-                            <h2 className="text-pink-400 font-bold">Idiomas</h2>
-                            <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-6 border-t border-gray-700 pt-6">
+                            <DetailItem label="Objetivo" value={profile.relationshipGoal} isMatch={objetivoMatch} />
+                            <DetailItem label="Idade" value={`${profile.age} anos`} isMatch={ageMatch} />
+                            <div>
+                                <h2 className="text-pink-400 font-bold">Interesse em</h2>
+                                <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
+                            </div>
+                            <DetailItem label="Signo" value={profile.signo} isMatch={signoMatch} />
+                            <DetailItem label="Religião" value={profile.religiao} isMatch={religiaoMatch} />
+                            <DetailItem label="Altura" value={`${profile.altura} cm`} isMatch={alturaMatch} />
+                            <DetailItem label="Corpo" value={profile.porteFisico} isMatch={corpoMatch} />
+                            <DetailItem label="Bebidas" value={profile.consumoAlcool} isMatch={bebidasMatch} />
+                            <DetailItem label="Fumo" value={profile.fumante} isMatch={fumoMatch} />
+                            <DetailItem label="Pets" value={profile.pets} isMatch={petsMatch} />
+                            <div>
+                                <h2 className="text-pink-400 font-bold">Idiomas</h2>
+                                <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

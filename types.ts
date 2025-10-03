@@ -13,6 +13,7 @@ export interface UserPreferences {
   petsDesejado: ('Sim' | 'Não' | 'Indiferente');
   disponibilidadeDesejada: string[]; // Array of availabilities, or empty for any
   nomeDesejado: string;
+  objetivoDesejado: ('Relacionamento sério' | 'Algo casual' | 'Amizade' | 'Não tenho certeza' | 'Indiferente')[];
 }
 
 export interface UserProfile {

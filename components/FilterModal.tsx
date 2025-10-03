@@ -50,6 +50,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ onClose, onSave }) => 
         signoDesejado: ['Indiferente'],
         religiaoDesejada: ['Indiferente'],
         petsDesejado: 'Indiferente',
+        objetivoDesejado: ['Indiferente'],
     });
 
     const handleSave = () => {
@@ -88,6 +89,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ onClose, onSave }) => 
         setPrefs(prev => ({ ...prev, [name]: (name.includes('idade') || name.includes('distancia') || name.includes('altura')) ? Number(value) : value }));
     };
 
+    const objetivoOptions: UserPreferences['objetivoDesejado'] = ['Relacionamento sério', 'Algo casual', 'Amizade', 'Não tenho certeza', 'Indiferente'];
     const signos = ['Áries', 'Touro', 'Gêmeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes', 'Indiferente'];
     const religioes = ['Católica', 'Evangélica', 'Espírita', 'Ateu(a)', 'Agnóstico(a)', 'Outra', 'Indiferente'];
     const porteFisicoOptions = ['Atlético', 'Normal', 'Robusto', 'Indiferente'];
@@ -154,7 +156,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({ onClose, onSave }) => 
                             <Input type="number" name="alturaMaxima" placeholder="Máxima" value={prefs.alturaMaxima} onChange={handleInputChange} className="text-center" />
                         </div>
                     </div>
-
+                    
+                    <CheckboxGroup title="Objetivo no Relacionamento" options={objetivoOptions} selected={prefs.objetivoDesejado} onChange={(v) => handleMultiSelectChange('objetivoDesejado', v)} />
                     <CheckboxGroup title="Porte Físico" options={porteFisicoOptions} selected={prefs.porteFisicoDesejado} onChange={(v) => handleMultiSelectChange('porteFisicoDesejado', v)} />
                     <CheckboxGroup title="Hábito de Fumar" options={fumanteOptions} selected={prefs.fumanteDesejado} onChange={(v) => handleMultiSelectChange('fumanteDesejado', v)} />
                     <CheckboxGroup title="Consumo de Álcool" options={consumoAlcoolOptions} selected={prefs.consumoAlcoolDesejado} onChange={(v) => handleMultiSelectChange('consumoAlcoolDesejado', v)} />

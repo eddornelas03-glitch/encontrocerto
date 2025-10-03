@@ -33,7 +33,7 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
             contents: fullPrompt,
         });
 
-        const resultText = response.text.trim().toUpperCase();
+        const resultText = response.text?.trim().toUpperCase();
         return resultText === 'OFENSIVO';
     } catch (error) {
         console.error("Error calling Gemini API for moderation:", error);

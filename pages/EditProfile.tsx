@@ -64,6 +64,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
         signoDesejado: ['Indiferente'],
         religiaoDesejada: ['Indiferente'],
         petsDesejado: 'Indiferente',
+        objetivoDesejado: ['Indiferente'],
     });
     const [isSaving, setIsSaving] = useState(false);
     const [bioError, setBioError] = useState('');
@@ -75,6 +76,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
     const consumoAlcoolOptions: UserProfile['consumoAlcool'][] = ['Não bebe', 'Socialmente', 'Frequentemente', 'Prefiro não dizer'];
     
     // Options for preferences
+    const objetivoOptions: UserPreferences['objetivoDesejado'] = ['Relacionamento sério', 'Algo casual', 'Amizade', 'Não tenho certeza', 'Indiferente'];
     const porteFisicoOptions = ['Atlético', 'Normal', 'Robusto', 'Indiferente'];
     const prefFumanteOptions = ['Não', 'Socialmente', 'Sim', 'Indiferente'];
     const prefConsumoAlcoolOptions = ['Não bebe', 'Socialmente', 'Frequentemente', 'Indiferente'];
@@ -356,6 +358,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                         </div>
                     </div>
 
+                    <CheckboxGroup title="Busca por Objetivo" options={objetivoOptions} selected={preferences.objetivoDesejado} onChange={(v) => handleMultiSelectPreferenceChange('objetivoDesejado', v)} />
                     <CheckboxGroup title="Porte Físico" options={porteFisicoOptions} selected={preferences.porteFisicoDesejado} onChange={(v) => handleMultiSelectPreferenceChange('porteFisicoDesejado', v)} />
                     <CheckboxGroup title="Hábito de Fumar" options={prefFumanteOptions} selected={preferences.fumanteDesejado} onChange={(v) => handleMultiSelectPreferenceChange('fumanteDesejado', v)} />
                     <CheckboxGroup title="Consumo de Álcool" options={prefConsumoAlcoolOptions} selected={preferences.consumoAlcoolDesejado} onChange={(v) => handleMultiSelectPreferenceChange('consumoAlcoolDesejado', v)} />
