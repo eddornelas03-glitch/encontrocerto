@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { UserProfile, UserPreferences } from '../types';
 
 interface ProfileCardProps {
@@ -27,22 +27,37 @@ const HeartIcon = () => (
     </svg>
 );
 
-const KeyboardHint = () => (
+type HintDirection = 'left' | 'right' | 'super';
+
+const KeyboardHint: React.FC<{ onHintClick: (direction: HintDirection) => void }> = ({ onHintClick }) => (
   <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none text-white z-10">
     {/* Left Arrow */}
-    <div className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 p-3 rounded-full animate-pulse">
+    <div
+      onClick={(e) => { e.stopPropagation(); onHintClick('left'); }}
+      className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 p-3 rounded-full animate-pulse cursor-pointer pointer-events-auto"
+      title="Não Curtir (←)"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
     </div>
     {/* Right Arrow */}
-    <div className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 p-3 rounded-full animate-pulse">
+    <div
+      onClick={(e) => { e.stopPropagation(); onHintClick('right'); }}
+      className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 p-3 rounded-full animate-pulse cursor-pointer pointer-events-auto"
+      title="Curtir (→)"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
     </div>
     {/* Up Arrow */}
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 p-3 rounded-full animate-pulse">
+    <div
+      onClick={(e) => { e.stopPropagation(); onHintClick('super'); }}
+      className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 p-3 rounded-full animate-pulse cursor-pointer pointer-events-auto"
+      title="Amei! (↑)"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
     </div>
   </div>
 );
+
 
 const CheckmarkIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-green-400">
@@ -157,23 +172,24 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         };
     }, [isDragging, startPos]);
 
+    const handleManualSwipe = useCallback((direction: 'left' | 'right' | 'super') => {
+        if (isDragging) return;
+        setTransition('transform 0.4s ease-out');
+        if (direction === 'right') {
+            setPosition({ x: window.innerWidth, y: 50 });
+            setRotation(30);
+        } else if (direction === 'left') {
+            setPosition({ x: -window.innerWidth, y: 50 });
+            setRotation(-30);
+        } else if (direction === 'super') {
+            setPosition({ x: 0, y: -window.innerHeight });
+            setRotation(0);
+        }
+        onSwipe(direction);
+    }, [isDragging, onSwipe]);
+
     useEffect(() => {
         if (!isTopCard || !triggerSwipe || isDragging) return;
-
-        const animateOut = (direction: 'left' | 'right' | 'super') => {
-            setTransition('transform 0.4s ease-out');
-            if (direction === 'right') {
-                setPosition({ x: window.innerWidth, y: 50 });
-                setRotation(30);
-            } else if (direction === 'left') {
-                setPosition({ x: -window.innerWidth, y: 50 });
-                setRotation(-30);
-            } else if (direction === 'super') {
-                setPosition({ x: 0, y: -window.innerHeight });
-                setRotation(0);
-            }
-            onSwipe(direction);
-        };
 
         const animateReset = () => {
             setTransition('transform 0.4s ease-out');
@@ -184,9 +200,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
         if (triggerSwipe === 'reset') {
             animateReset();
         } else {
-            animateOut(triggerSwipe);
+            handleManualSwipe(triggerSwipe);
         }
-    }, [triggerSwipe, isTopCard, isDragging, onSwipe]);
+    }, [triggerSwipe, isTopCard, isDragging, handleManualSwipe]);
 
     const cardStyle: React.CSSProperties = {
         transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg)`,
@@ -217,7 +233,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
             <div className="relative w-full h-full bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                 <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" />
 
-                {isTopCard && !showDetails && <KeyboardHint />}
+                {isTopCard && !showDetails && <KeyboardHint onHintClick={handleManualSwipe} />}
                 
                 {isTopCard && (
                     <>
