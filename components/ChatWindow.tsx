@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { UserProfile, Message, User } from '../types';
 import { MeetingScheduler } from './MeetingScheduler';
 import { MessageBubble } from './MessageBubble';
@@ -8,7 +9,6 @@ import { ReportModal } from './ReportModal';
 
 interface ChatWindowProps {
   match: UserProfile;
-  onBack: () => void;
   currentUser: User;
   messages: Message[];
   onSendMessage: (text: string) => void;
@@ -92,7 +92,6 @@ const TrashIcon = () => (
 
 const ChatWindowComponent: React.FC<ChatWindowProps> = ({
   match,
-  onBack,
   currentUser,
   messages,
   onSendMessage,
@@ -101,6 +100,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
   onViewProfile,
   onUnmatch,
 }) => {
+  const navigate = useNavigate();
   const [isScheduling, setIsScheduling] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState<'unmatch' | 'block' | null>(
@@ -156,7 +156,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
         <header className="bg-gray-900 p-3 border-b border-gray-700 flex items-center justify-between shadow-md z-10 shrink-0">
           <div className="flex items-center">
             <button
-              onClick={onBack}
+              onClick={() => navigate('/matches')}
               className="text-gray-300 mr-2 p-2 rounded-full hover:bg-gray-700"
               aria-label="Voltar para a lista de matches"
             >

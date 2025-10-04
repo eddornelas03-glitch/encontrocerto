@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { UserProfile } from '../types';
 import { supabase } from '../services/supabaseService';
+import { useNavigate } from 'react-router-dom';
 
 interface MatchModalProps {
   match: UserProfile;
@@ -16,6 +17,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
   onSendMessage,
 }) => {
   const [explanation, setExplanation] = useState('Analisando compatibilidade...');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getExplanation = async () => {
@@ -24,6 +26,11 @@ export const MatchModal: React.FC<MatchModalProps> = ({
     };
     getExplanation();
   }, [match]);
+
+  const handleSendMessageClick = () => {
+    onSendMessage();
+    navigate(`/matches/${match.id}`);
+  };
 
   return (
     <div
@@ -69,7 +76,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
 
         <div className="flex flex-col gap-4">
           <button
-            onClick={onSendMessage}
+            onClick={handleSendMessageClick}
             className="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-full hover:bg-pink-600 transition-colors"
           >
             Enviar Mensagem

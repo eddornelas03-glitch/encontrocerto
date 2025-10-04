@@ -1,10 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import type { View } from '../types';
 
-interface MyProfileProps {
-  setView: (view: View) => void;
-}
+interface MyProfileProps {}
 
 const EditIcon = () => (
   <svg
@@ -39,8 +37,9 @@ const PreferenceItem: React.FC<{ label: string; value: string }> = ({
   </div>
 );
 
-export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
+export const MyProfile: React.FC<MyProfileProps> = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) {
     return <div className="p-4 text-white">Usuário não encontrado.</div>;
@@ -86,7 +85,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
             </p>
           </div>
           <button
-            onClick={() => setView('edit-profile')}
+            onClick={() => navigate('/edit-profile')}
             className="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-full flex items-center gap-2"
           >
             <EditIcon /> Editar

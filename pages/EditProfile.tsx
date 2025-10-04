@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProfileEditor } from '../hooks/useProfileEditor';
 import {
   ALL_INTERESTS,
@@ -12,10 +13,7 @@ import {
   PREF_CONSUMO_ALCOOL_OPTIONS,
 } from '../constants';
 
-interface EditProfileProps {
-  onSave: () => void;
-  onCancel: () => void;
-}
+interface EditProfileProps {}
 
 const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
@@ -83,10 +81,8 @@ const CheckboxGroup: React.FC<{
   </div>
 );
 
-export const EditProfile: React.FC<EditProfileProps> = ({
-  onSave,
-  onCancel,
-}) => {
+export const EditProfile: React.FC<EditProfileProps> = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     profile,
@@ -101,7 +97,9 @@ export const EditProfile: React.FC<EditProfileProps> = ({
     handleImageUpload,
     handleRemoveImage,
     handleSave,
-  } = useProfileEditor(onSave);
+  } = useProfileEditor(() => navigate('/my-profile'));
+
+  const onCancel = () => navigate(-1);
 
   return (
     <div className="h-full w-full bg-gray-900 text-white flex flex-col">

@@ -1,15 +1,12 @@
 import React, { memo } from 'react';
+import { Link } from 'react-router-dom';
 import type { UserProfile } from '../types';
 
 interface MatchListProps {
   matches: UserProfile[];
-  onSelectMatch: (match: UserProfile) => void;
 }
 
-const MatchListComponent: React.FC<MatchListProps> = ({
-  matches,
-  onSelectMatch,
-}) => {
+const MatchListComponent: React.FC<MatchListProps> = ({ matches }) => {
   return (
     <div className="h-full w-full bg-gray-900 text-white flex flex-col">
       <div className="p-4 border-b border-gray-700 shrink-0">
@@ -30,15 +27,10 @@ const MatchListComponent: React.FC<MatchListProps> = ({
       ) : (
         <div className="overflow-y-auto flex-grow">
           {matches.map((match) => (
-            <div
+            <Link
+              to={`/matches/${match.id}`}
               key={match.id}
-              role="button"
-              tabIndex={0}
               className="flex items-center p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => onSelectMatch(match)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') onSelectMatch(match);
-              }}
             >
               <img
                 src={match.images[0]}
@@ -52,7 +44,7 @@ const MatchListComponent: React.FC<MatchListProps> = ({
                 </h3>
                 <p className="text-sm text-gray-400">Diga olá!</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

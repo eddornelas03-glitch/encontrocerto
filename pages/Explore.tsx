@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { UserProfile, View } from '../types';
+import type { UserProfile } from '../types';
 import { ProfileCard } from '../components/ProfileCard';
 import { AdModal } from '../components/AdModal';
 import { FilterModal } from '../components/FilterModal';
@@ -8,7 +8,6 @@ import { useExploreProfiles } from '../hooks/useExploreProfiles';
 
 interface ExploreProps {
   onNewMatch: (profile: UserProfile) => void;
-  setView: (view: View) => void;
 }
 
 const SettingsIcon = () => (

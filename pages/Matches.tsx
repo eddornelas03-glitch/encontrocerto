@@ -1,27 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MatchList } from '../components/MatchList';
 import { ChatWindow } from '../components/ChatWindow';
 import { MatchProfileView } from '../components/MatchProfileView';
-import type { UserProfile, View } from '../types';
+import type { UserProfile } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useChatManager } from '../hooks/useChatManager';
 
 interface MatchesProps {
   initialMatches: UserProfile[];
-  currentView: View;
-  setView: (view: View) => void;
-  matchToChat: UserProfile | null;
-  onChatOpened: () => void;
 }
 
-export const Matches: React.FC<MatchesProps> = ({
-  initialMatches,
-  currentView,
-  setView,
-  matchToChat,
-  onChatOpened,
-}) => {
+export const Matches: React.FC<MatchesProps> = ({ initialMatches }) => {
   const { user } = useAuth();
+  const { matchId } = useParams<{ matchId?: string }>();
+  const navigate = useNavigate();
+
   const {
     matches,
     allMessages,
@@ -34,42 +28,25 @@ export const Matches: React.FC<MatchesProps> = ({
   } = useChatManager(initialMatches, user);
   
   const [activeChat, setActiveChat] = useState<UserProfile | null>(null);
-  const [isFromNewMatch, setIsFromNewMatch] = useState(false);
   const [viewingProfile, setViewingProfile] = useState<UserProfile | null>(null);
 
-  const openChat = useCallback((match: UserProfile) => {
-    prepareChat(match.id, match.name);
-    setActiveChat(match);
-    setView('chat');
-  }, [prepareChat, setView]);
-  
-  // Effect to handle opening chat from a new match
   useEffect(() => {
-    if (matchToChat) {
-      setIsFromNewMatch(true);
-      openChat(matchToChat);
-      onChatOpened();
+    if (matchId) {
+      const match = matches.find((m) => m.id === parseInt(matchId, 10));
+      if (match) {
+        prepareChat(match.id, match.name);
+        setActiveChat(match);
+      }
+    } else {
+      setActiveChat(null);
     }
-  }, [matchToChat, onChatOpened, openChat]);
+  }, [matchId, matches, prepareChat]);
 
-  const handleSelectMatchFromList = (match: UserProfile) => {
-    setIsFromNewMatch(false);
-    openChat(match);
+  const handleUnmatchAction = (id: number) => {
+    handleUnmatch(id);
+    navigate('/matches');
   };
 
-  const handleBackFromChat = () => {
-    const targetView = isFromNewMatch ? 'explore' : 'matches';
-    setActiveChat(null);
-    setIsFromNewMatch(false);
-    setView(targetView);
-  };
-  
-  const handleUnmatchAction = (matchId: number) => {
-    handleUnmatch(matchId);
-    setActiveChat(null);
-    setView('matches');
-  };
-  
   const handleViewProfile = (profile: UserProfile) => {
     setViewingProfile(profile);
   };
@@ -105,11 +82,10 @@ export const Matches: React.FC<MatchesProps> = ({
     );
   }
 
-  if (currentView === 'chat' && activeChat) {
+  if (activeChat) {
     return (
       <ChatWindow
         match={activeChat}
-        onBack={handleBackFromChat}
         currentUser={user}
         messages={allMessages[activeChat.id] || []}
         onSendMessage={(text) => handleSendMessage(activeChat, text)}
@@ -121,5 +97,5 @@ export const Matches: React.FC<MatchesProps> = ({
     );
   }
 
-  return <MatchList matches={matches} onSelectMatch={handleSelectMatchFromList} />;
+  return <MatchList matches={matches} />;
 };

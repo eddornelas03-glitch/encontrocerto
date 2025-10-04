@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import type { UserProfile, View } from './types';
+import type { UserProfile } from './types';
 import { Landing } from './pages/Landing';
 import { BottomNav } from './components/BottomNav';
 import { MatchModal } from './components/MatchModal';
@@ -46,7 +47,7 @@ const LoadingFallback: React.FC = () => (
 
 const App: React.FC = () => {
   const { session, user, loading } = useAuth();
-  const [view, setView] = useState<View>('explore');
+  const navigate = useNavigate();
   const [authView, setAuthView] = useState<
     'landing' | 'login' | 'register' | 'google-login'
   >('landing');
@@ -54,7 +55,6 @@ const App: React.FC = () => {
   const [matches, setMatches] = useState<UserProfile[]>([]);
   const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
   const [hasNewMatch, setHasNewMatch] = useState(false);
-  const [matchToChat, setMatchToChat] = useState<UserProfile | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
 
   useEffect(() => {
@@ -77,10 +77,6 @@ const App: React.FC = () => {
     }
   };
 
-  const onChatOpened = useCallback(() => {
-    setMatchToChat(null);
-  }, []);
-
   useEffect(() => {
     if (session) {
       const fetchInitialMatches = async () => {
@@ -92,12 +88,6 @@ const App: React.FC = () => {
       fetchInitialMatches();
     }
   }, [session]);
-
-  useEffect(() => {
-    if (view === 'matches') {
-      setHasNewMatch(false);
-    }
-  }, [view]);
 
   const handleNewMatch = useCallback((profile: UserProfile) => {
     setMatches((prev) => [profile, ...prev]);
@@ -111,11 +101,10 @@ const App: React.FC = () => {
 
   const openChatFromMatch = useCallback(() => {
     if (newMatch) {
-      setMatchToChat(newMatch);
-      setView('chat');
+      navigate(`/matches/${newMatch.id}`);
     }
     setNewMatch(null);
-  }, [newMatch]);
+  }, [newMatch, navigate]);
 
   const handleGoogleLoginSuccess = async () => {
     await supabase.auth.signInWithOAuth({ provider: 'google' });
@@ -169,50 +158,21 @@ const App: React.FC = () => {
     }
 
     // Logged in user view
-    let ComponentToRender;
-    switch (view) {
-      case 'explore':
-        ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;
-        break;
-      case 'matches':
-      case 'chat':
-        ComponentToRender = (
-          <Matches
-            initialMatches={matches}
-            currentView={view}
-            setView={setView}
-            matchToChat={matchToChat}
-            onChatOpened={onChatOpened}
-          />
-        );
-        break;
-      case 'my-profile':
-        ComponentToRender = <MyProfile setView={setView} />;
-        break;
-      case 'edit-profile':
-        ComponentToRender = (
-          <EditProfile
-            onCancel={() => setView('my-profile')}
-            onSave={() => {
-              setView('my-profile');
-            }}
-          />
-        );
-        break;
-      default:
-        ComponentToRender = <Explore onNewMatch={handleNewMatch} setView={setView} />;
-    }
-
     return (
       <div className="h-full w-full flex flex-col bg-gray-900">
         <main className="flex-grow relative overflow-y-auto">
-          <Suspense fallback={<LoadingFallback />}>{ComponentToRender}</Suspense>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/explore" element={<Explore onNewMatch={handleNewMatch} />} />
+              <Route path="/matches" element={<Matches initialMatches={matches} />} />
+              <Route path="/matches/:matchId" element={<Matches initialMatches={matches} />} />
+              <Route path="/my-profile" element={<MyProfile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="*" element={<Navigate to="/explore" />} />
+            </Routes>
+          </Suspense>
         </main>
-        <BottomNav
-          currentView={view}
-          setCurrentView={setView}
-          hasNewMatch={hasNewMatch}
-        />
+        <BottomNav hasNewMatch={hasNewMatch} setHasNewMatch={setHasNewMatch} />
       </div>
     );
   };

@@ -1,10 +1,9 @@
 import React from 'react';
-import type { View } from '../types';
+import { Link, useLocation } from 'react-router-dom';
 
 interface BottomNavProps {
-  currentView: View;
-  setCurrentView: (view: View) => void;
   hasNewMatch: boolean;
+  setHasNewMatch: (hasMatch: boolean) => void;
 }
 
 const FireIcon = ({ isActive }: { isActive: boolean }) => (
@@ -49,40 +48,44 @@ const UserIcon = ({ isActive }: { isActive: boolean }) => (
 );
 
 export const BottomNav: React.FC<BottomNavProps> = ({
-  currentView,
-  setCurrentView,
   hasNewMatch,
+  setHasNewMatch,
 }) => {
-  const views: { name: View; title: string; icon: React.FC<{ isActive: boolean }> }[] = [
-    { name: 'explore', title: 'Explorar', icon: FireIcon },
-    { name: 'matches', title: 'Matches', icon: ChatIcon },
-    { name: 'my-profile', title: 'Meu Perfil', icon: UserIcon },
+  const location = useLocation();
+  const views: { path: string; title: string; icon: React.FC<{ isActive: boolean }> }[] = [
+    { path: '/explore', title: 'Explorar', icon: FireIcon },
+    { path: '/matches', title: 'Matches', icon: ChatIcon },
+    { path: '/my-profile', title: 'Meu Perfil', icon: UserIcon },
   ];
 
   return (
     <nav className="z-20 bg-gray-900/80 backdrop-blur-sm shrink-0">
       <div className="w-full h-20 flex justify-around items-center border-t border-gray-700">
-        {views.map(({ name, title, icon: Icon }) => (
-          <button
-            key={name}
-            onClick={() => setCurrentView(name)}
-            className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-pink-500"
-            title={title}
-            data-tour-id={`${name}-nav`}
-          >
-            <Icon isActive={currentView === name || (name === 'matches' && currentView === 'chat')} />
-            <span
-              className={`text-xs ${
-                currentView === name || (name === 'matches' && currentView === 'chat') ? 'text-pink-500' : 'text-gray-400'
-              }`}
+        {views.map(({ path, title, icon: Icon }) => {
+          const isActive = location.pathname.startsWith(path);
+          return (
+            <Link
+              key={path}
+              to={path}
+              onClick={() => {
+                if (path === '/matches') {
+                  setHasNewMatch(false);
+                }
+              }}
+              className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-pink-500"
+              title={title}
+              data-tour-id={`${path.substring(1)}-nav`}
             >
-              {title}
-            </span>
-            {name === 'matches' && hasNewMatch && (
-              <span className="absolute -top-1 right-1 block h-3 w-3 rounded-full bg-pink-500 border-2 border-white"></span>
-            )}
-          </button>
-        ))}
+              <Icon isActive={isActive} />
+              <span className={`text-xs ${isActive ? 'text-pink-500' : 'text-gray-400'}`}>
+                {title}
+              </span>
+              {path === '/matches' && hasNewMatch && (
+                <span className="absolute -top-1 right-1 block h-3 w-3 rounded-full bg-pink-500 border-2 border-white"></span>
+              )}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
