@@ -120,6 +120,10 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                         <p className="mt-1 text-gray-200">{profile.pets}</p>
                     </div>
                     <div>
+                        <h2 className="text-pink-400 font-bold">PCD</h2>
+                        <p className="mt-1 text-gray-200">{profile.pcd}</p>
+                    </div>
+                    <div>
                         <h2 className="text-pink-400 font-bold">Idiomas</h2>
                         <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
                     </div>
@@ -155,6 +159,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                         <PreferenceItem label="Hábito de Fumar" value={formatArrayPreference(preferences.fumanteDesejado)} />
                         <PreferenceItem label="Consumo de Álcool" value={formatArrayPreference(preferences.consumoAlcoolDesejado)} />
                         <PreferenceItem label="Tem Pets?" value={preferences.petsDesejado} />
+                        <PreferenceItem label="PCD" value={preferences.pcdDesejado} />
                         <PreferenceItem label="Signo" value={formatArrayPreference(preferences.signoDesejado)} />
                         <PreferenceItem label="Religião" value={formatArrayPreference(preferences.religiaoDesejada)} />
                     </div>

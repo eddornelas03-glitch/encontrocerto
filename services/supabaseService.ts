@@ -16,6 +16,7 @@ const createMockProfiles = (count: number): UserProfile[] => {
   const pets: UserProfile['pets'][] = ['Sim', 'Não'];
   const idiomas = [['Português'], ['Português', 'Inglês'], ['Português', 'Espanhol']];
   const disponibilidades: UserProfile['disponibilidade'][] = ['Hoje', 'Essa semana', 'Online por enquanto', 'Sem pressa'];
+  const pcds: UserProfile['pcd'][] = ['Não', 'Não', 'Não', 'Não', 'Sim', 'Prefiro não dizer']; // Make "Não" more common for realism
 
   return Array.from({ length: count }, (_, i) => {
     const [name, gender] = names[i % names.length];
@@ -49,6 +50,7 @@ const createMockProfiles = (count: number): UserProfile[] => {
       pets: pets[i % pets.length],
       idiomas: idiomas[i % idiomas.length],
       disponibilidade: disponibilidades[i % disponibilidades.length],
+      pcd: pcds[i % pcds.length],
     };
   });
 };
@@ -68,6 +70,7 @@ const defaultUserPreferences: UserPreferences = {
     signoDesejado: [],
     religiaoDesejada: [],
     petsDesejado: 'Indiferente',
+    pcdDesejado: 'Indiferente',
     disponibilidadeDesejada: [],
     nomeDesejado: '',
     objetivoDesejado: ['Indiferente'],
@@ -106,6 +109,7 @@ const defaultUser: User = {
         pets: 'Não',
         idiomas: ['Português', 'Inglês'],
         disponibilidade: 'Essa semana',
+        pcd: 'Não',
     },
     preferences: defaultUserPreferences
 };
@@ -159,6 +163,7 @@ export const supabase = {
           pets: 'Não',
           idiomas: ['Português'],
           disponibilidade: 'Sem pressa',
+          pcd: 'Prefiro não dizer',
         },
         preferences: {
             distanciaMaxima: 50,
@@ -173,6 +178,7 @@ export const supabase = {
             signoDesejado: [],
             religiaoDesejada: [],
             petsDesejado: 'Indiferente',
+            pcdDesejado: 'Indiferente',
             disponibilidadeDesejada: [],
             nomeDesejado: '',
             objetivoDesejado: [],

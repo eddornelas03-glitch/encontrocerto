@@ -64,6 +64,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
         signoDesejado: ['Indiferente'],
         religiaoDesejada: ['Indiferente'],
         petsDesejado: 'Indiferente',
+        pcdDesejado: 'Indiferente',
         objetivoDesejado: ['Indiferente'],
     });
     const [isSaving, setIsSaving] = useState(false);
@@ -275,6 +276,14 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                             </Select>
                         </div>
                         <div>
+                            <Label htmlFor="pcd">PCD (Pessoa com Deficiência)</Label>
+                            <Select id="pcd" name="pcd" value={profile.pcd} onChange={handleProfileChange}>
+                                <option>Não</option>
+                                <option>Sim</option>
+                                <option>Prefiro não dizer</option>
+                            </Select>
+                        </div>
+                        <div>
                             <Label htmlFor="relationshipGoal">Objetivo</Label>
                              <Select id="relationshipGoal" name="relationshipGoal" value={profile.relationshipGoal} onChange={handleProfileChange}>
                                 <option>Relacionamento sério</option>
@@ -365,13 +374,23 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onSave, onCancel }) =>
                     <CheckboxGroup title="Signo" options={signos} selected={preferences.signoDesejado} onChange={(v) => handleMultiSelectPreferenceChange('signoDesejado', v)} />
                     <CheckboxGroup title="Religião" options={religioes} selected={preferences.religiaoDesejada} onChange={(v) => handleMultiSelectPreferenceChange('religiaoDesejada', v)} />
 
-                    <div>
-                        <Label htmlFor="petsDesejado">Tem Pets?</Label>
-                        <Select id="petsDesejado" name="petsDesejado" value={preferences.petsDesejado} onChange={handlePreferenceChange}>
-                            <option value="Indiferente">Indiferente</option>
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </Select>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="petsDesejado">Tem Pets?</Label>
+                            <Select id="petsDesejado" name="petsDesejado" value={preferences.petsDesejado} onChange={handlePreferenceChange}>
+                                <option value="Indiferente">Indiferente</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="pcdDesejado">PCD (Pessoa com Deficiência)</Label>
+                            <Select id="pcdDesejado" name="pcdDesejado" value={preferences.pcdDesejado} onChange={handlePreferenceChange}>
+                                <option value="Indiferente">Indiferente</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </Select>
+                        </div>
                     </div>
                 </FormSection>
 

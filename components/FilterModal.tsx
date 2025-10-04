@@ -50,6 +50,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ onClose, onSave }) => 
         signoDesejado: ['Indiferente'],
         religiaoDesejada: ['Indiferente'],
         petsDesejado: 'Indiferente',
+        pcdDesejado: 'Indiferente',
         objetivoDesejado: ['Indiferente'],
     });
 
@@ -167,6 +168,15 @@ export const FilterModal: React.FC<FilterModalProps> = ({ onClose, onSave }) => 
                     <div>
                         <Label htmlFor="petsDesejado">Tem Pets?</Label>
                         <Select id="petsDesejado" name="petsDesejado" value={prefs.petsDesejado} onChange={handleInputChange}>
+                            <option value="Indiferente">Indiferente</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="pcdDesejado">PCD (Pessoa com Deficiência)</Label>
+                        <Select id="pcdDesejado" name="pcdDesejado" value={prefs.pcdDesejado} onChange={handleInputChange}>
                             <option value="Indiferente">Indiferente</option>
                             <option value="Sim">Sim</option>
                             <option value="Não">Não</option>

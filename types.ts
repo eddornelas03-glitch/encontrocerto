@@ -11,6 +11,7 @@ export interface UserPreferences {
   signoDesejado: string[]; // Array of zodiac signs, or empty for any
   religiaoDesejada: string[]; // Array of religions, or empty for any
   petsDesejado: ('Sim' | 'Não' | 'Indiferente');
+  pcdDesejado: ('Sim' | 'Não' | 'Indiferente');
   disponibilidadeDesejada: string[]; // Array of availabilities, or empty for any
   nomeDesejado: string;
   objetivoDesejado: ('Relacionamento sério' | 'Algo casual' | 'Amizade' | 'Não tenho certeza' | 'Indiferente')[];
@@ -49,6 +50,7 @@ export interface UserProfile {
   pets: 'Sim' | 'Não';
   idiomas: string[];
   disponibilidade: 'Hoje' | 'Essa semana' | 'Online por enquanto' | 'Sem pressa';
+  pcd: 'Sim' | 'Não' | 'Prefiro não dizer';
 }
 
 export interface Message {

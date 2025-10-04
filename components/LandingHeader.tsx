@@ -36,7 +36,7 @@ const MobileMenu: React.FC<{ onClose: () => void, onShowPolicy: (key: string) =>
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 flex-grow overflow-y-auto">
+        <div className="bg-gray-900 rounded-lg p-4 flex-grow">
             {items.map(section => (
                 <div key={section.title} className="mb-6">
                     <h2 className="text-xl font-bold text-pink-400 mb-2">{section.title}</h2>
@@ -51,16 +51,6 @@ const MobileMenu: React.FC<{ onClose: () => void, onShowPolicy: (key: string) =>
                     </ul>
                 </div>
             ))}
-             <div className="mb-6">
-                <h2 className="text-xl font-bold text-pink-400 mb-2">Suporte</h2>
-                <ul>
-                    <li>
-                        <a href="https://wa.me/5531985245546" target="_blank" rel="noopener noreferrer" className="block py-3 text-lg text-white hover:bg-gray-800 rounded-md px-2">
-                            Fale Conosco via WhatsApp
-                        </a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </div>
 );
@@ -77,6 +67,12 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
                 { key: 'safety-tips', label: 'Dicas de Segurança' },
                 { key: 'safety-policy', label: 'Segurança e Política' },
                 { key: 'security', label: 'Segurança e Denúncia' }
+            ]
+        },
+        {
+            title: 'Suporte',
+            items: [
+                // Adicione itens de suporte aqui no futuro
             ]
         }
     ];
@@ -97,9 +93,6 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
                     {menuItems.map(section => (
                         section.items.length > 0 && <NavItem key={section.title} title={section.title} items={section.items} onShowPolicy={onShowPolicy} />
                     ))}
-                    <a href="https://wa.me/5531985245546" target="_blank" rel="noopener noreferrer" className="text-white font-semibold hover:text-pink-300 transition-colors py-2">
-                        Suporte
-                    </a>
                 </nav>
 
                 {/* Mobile Menu Button */}

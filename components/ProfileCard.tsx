@@ -17,7 +17,7 @@ const InfoIcon = () => (
 
 const SparklesIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-        <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.39-3.423 3.11a.75.75 0 00.44 1.337l6.458.992-2.903 6.04a.75.75 0 001.242.828l4.318-5.398 4.318 5.398a.75.75 0 001.242-.828l-2.903-6.04 6.458-.992a.75.75 0 00.44-1.337l-3.423-3.11-4.753-.39-1.83-4.401z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.39-3.423 3.11a.75.75 0 00.44 1.337l6.458.992-2.903 6.04a.75.75 0 001.242.828l4.318-5.398 4.318 5.398a.75.75 0 001.242-.828l-2.903-6.04 6.458.992a.75.75 0 00.44-1.337l-3.423-3.11-4.753-.39-1.83-4.401z" clipRule="evenodd" />
     </svg>
 );
 
@@ -221,6 +221,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
     const bebidasMatch = prefs.consumoAlcoolDesejado.includes('Indiferente') || (profile.consumoAlcool !== 'Prefiro não dizer' && prefs.consumoAlcoolDesejado.includes(profile.consumoAlcool));
     const fumoMatch = prefs.fumanteDesejado.includes('Indiferente') || (profile.fumante !== 'Prefiro não dizer' && prefs.fumanteDesejado.includes(profile.fumante));
     const petsMatch = prefs.petsDesejado === 'Indiferente' || profile.pets === prefs.petsDesejado;
+    const pcdMatch = prefs.pcdDesejado === 'Indiferente' || (profile.pcd !== 'Prefiro não dizer' && profile.pcd === prefs.pcdDesejado);
 
 
     return (
@@ -335,6 +336,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
                             <DetailItem label="Bebidas" value={profile.consumoAlcool} isMatch={bebidasMatch} />
                             <DetailItem label="Fumo" value={profile.fumante} isMatch={fumoMatch} />
                             <DetailItem label="Pets" value={profile.pets} isMatch={petsMatch} />
+                            <DetailItem label="PCD" value={profile.pcd} isMatch={pcdMatch} />
                             <div>
                                 <h2 className="text-pink-400 font-bold">Idiomas</h2>
                                 <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>

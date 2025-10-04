@@ -69,6 +69,10 @@ const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
     
     if (prefs.petsDesejado !== 'Indiferente' && profile.pets !== prefs.petsDesejado) return false;
 
+    if (prefs.pcdDesejado !== 'Indiferente') {
+        if (profile.pcd === 'Prefiro não dizer' || profile.pcd !== prefs.pcdDesejado) return false;
+    }
+
     if (prefs.signoDesejado.length > 0 && !prefs.signoDesejado.includes('Indiferente') && !prefs.signoDesejado.includes(profile.signo)) return false;
 
     if (prefs.religiaoDesejada.length > 0 && !prefs.religiaoDesejada.includes('Indiferente') && !prefs.religiaoDesejada.includes(profile.religiao)) return false;
