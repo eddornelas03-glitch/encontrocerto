@@ -13,7 +13,7 @@ interface LandingProps {
 
 const BackgroundProfileCard: React.FC<{ profile: UserProfile, className?: string }> = ({ profile, className }) => (
     <div className={`relative w-full aspect-[3/4] bg-gray-800 rounded-2xl shadow-xl overflow-hidden ${className}`}>
-        <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" />
+        <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20"></div>
         <div className="absolute inset-0 p-3 flex flex-col justify-end text-white">
             <h1 className="text-lg font-bold">{profile.apelido}, <span className="font-light">{profile.age}</span></h1>
@@ -31,7 +31,7 @@ function chunkArray<T>(array: T[], size: number): T[][] {
 }
 
 const Logo = () => (
-    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w.org/2000/svg" className="inline-block mb-4">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block mb-4">
         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#EC4899"/>
         <path d="M10.0001 13.3L7.7001 11L6.3001 12.4L10.0001 16.1L18.0001 8.10001L16.6001 6.70001L10.0001 13.3Z" fill="white"/>
     </svg>
@@ -59,7 +59,7 @@ export const Landing: React.FC<LandingProps> = ({ onNavigateToLogin, onNavigateT
             <LandingHeader onShowPolicy={setActivePolicy} />
 
             {/* Animated Background - more visible */}
-            <div className="absolute inset-0 flex gap-4 overflow-hidden z-0 opacity-30">
+            <div className="absolute inset-0 hidden sm:flex gap-4 overflow-hidden z-0 opacity-30">
                 {profileColumns.map((column, colIndex) => (
                     <div key={colIndex} className={`w-1/5 flex-shrink-0 ${colIndex % 2 === 0 ? 'animate-scroll-down' : 'animate-scroll-up'}`}>
                         <div className="flex flex-col gap-4">

@@ -21,9 +21,15 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, currentUserImage,
   }, [match]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onClose}>
+    <div 
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4" 
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="match-title"
+    >
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-lg text-center p-6 w-full max-w-sm relative transform transition-all scale-100" onClick={e => e.stopPropagation()}>
-        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-400">Deu Match!</h2>
+        <h2 id="match-title" className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-400">Deu Match!</h2>
         <p className="text-gray-300 mt-2 text-sm">Você e {match.name} se curtiram.</p>
         
         <div className="flex justify-center items-center my-6 space-x-[-2rem]">

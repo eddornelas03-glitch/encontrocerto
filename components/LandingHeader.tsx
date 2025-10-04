@@ -70,11 +70,11 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
             ]
         },
         {
-            title: 'Suporte',
+            title: 'Legal',
             items: [
-                // Adicione itens de suporte aqui no futuro
+                { key: 'privacy-policy', label: 'Política de Privacidade' }
             ]
-        }
+        },
     ];
 
     return (
@@ -97,7 +97,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
 
                 {/* Mobile Menu Button */}
                 <div className="md:hidden">
-                    <button onClick={() => setIsMobileMenuOpen(true)} className="text-white bg-black/20 p-2 rounded-full backdrop-blur-sm">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="text-white bg-black/20 p-2 rounded-full backdrop-blur-sm" aria-label="Abrir menu de informações">
                         <InfoIcon />
                     </button>
                 </div>

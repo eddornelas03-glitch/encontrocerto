@@ -91,4 +91,25 @@ export const policyContent = {
             },
         ],
     },
+    'privacy-policy': {
+        title: 'Política de Privacidade',
+        content: [
+            {
+                subtitle: 'Coleta de Dados que Você Fornece',
+                text: 'Coletamos informações que você nos fornece diretamente ao criar sua conta e preencher seu perfil. Isso inclui seu nome, e-mail, idade, fotos, bio, interesses e preferências. Essas informações são essenciais para o funcionamento do serviço e para ajudar você a encontrar conexões relevantes.',
+            },
+            {
+                subtitle: 'Dados Coletados Automaticamente',
+                text: 'Quando você usa o Encontro Certo, coletamos algumas informações automaticamente, como dados de uso (suas interações com o app), informações do dispositivo (modelo, sistema operacional) e localização aproximada (com sua permissão), para melhorar a funcionalidade e segurança do aplicativo.',
+            },
+            {
+                subtitle: 'Uso de Cookies',
+                text: 'Utilizamos cookies e tecnologias semelhantes para operar e aprimorar nossos serviços. Eles nos ajudam a lembrar de suas preferências, a entender como os usuários interagem com a plataforma e a personalizar a publicidade. Você pode gerenciar suas preferências de cookies através do nosso banner de consentimento e nas configurações do seu navegador.',
+            },
+            {
+                subtitle: 'Contato',
+                text: 'Se tiver alguma dúvida sobre esta Política de Privacidade ou sobre nossas práticas, entre em contato conosco pelo e-mail: privacidade@encontrocerto.com (este é um e-mail fictício para fins de demonstração).',
+            },
+        ]
+    }
 };

@@ -45,7 +45,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
     return (
         <div className="h-full w-full bg-gray-900 text-white overflow-y-auto pb-24">
             <div className="relative">
-                <img src={profile.images[0]} alt={profile.name} className="w-full h-80 object-cover" />
+                <img src={profile.images[0]} alt={profile.name} className="w-full h-80 object-cover" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
                  <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-sm">
                     <HeartIcon/>
@@ -57,8 +57,8 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                 </div>
             </div>
             
-            <div className="p-6 -mt-20 relative">
-                <div className="flex justify-between items-end">
+            <div className="sticky top-0 z-10 bg-gray-900 -mt-20 pt-4">
+                 <div className="flex justify-between items-end p-6 pt-0">
                     <div>
                         <h1 className="text-3xl font-bold">{profile.apelido}, <span className="font-light">{profile.age}</span></h1>
                         <p className="text-gray-300">{profile.city}, {profile.state}</p>
@@ -67,7 +67,9 @@ export const MyProfile: React.FC<MyProfileProps> = ({ setView }) => {
                         <EditIcon/> Editar
                     </button>
                 </div>
+            </div>
 
+            <div className="p-6 pt-0">
                 <div className="mt-8 border-t border-gray-700 pt-6">
                     <h2 className="text-pink-400 font-bold">Bio</h2>
                     <p className="mt-1 text-gray-200 whitespace-pre-wrap">{profile.bio}</p>

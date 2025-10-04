@@ -22,10 +22,13 @@ export const MatchList: React.FC<MatchListProps> = ({ matches, onSelectMatch }) 
           {matches.map(match => (
             <div
               key={match.id}
+              role="button"
+              tabIndex={0}
               className="flex items-center p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors"
               onClick={() => onSelectMatch(match)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectMatch(match); }}
             >
-              <img src={match.images[0]} alt={match.name} className="w-16 h-16 rounded-full object-cover" />
+              <img src={match.images[0]} alt={match.name} className="w-16 h-16 rounded-full object-cover" loading="lazy" />
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-gray-100">{match.name}</h3>
                 <p className="text-sm text-gray-400">Diga olá!</p>

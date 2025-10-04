@@ -18,7 +18,7 @@ const EditProfile = lazy(() => import('./pages/EditProfile').then(module => ({ d
 
 
 const LoadingFallback: React.FC = () => (
-    <div className="h-full w-full flex justify-center items-center bg-gray-900">
+    <div className="h-full w-full flex justify-center items-center bg-gray-900" role="status" aria-label="Carregando conteúdo">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
     </div>
 );

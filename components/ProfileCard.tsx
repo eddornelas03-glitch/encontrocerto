@@ -234,20 +234,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
             onClick={handleClick}
         >
             <div className="relative w-full h-full bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" />
+                <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
 
                 {isTopCard && !showDetails && <KeyboardHint onHintClick={handleManualSwipe} />}
                 
                 {isTopCard && (
                     <>
                         <div style={{ opacity: actionOpacities.like }} className="absolute top-16 left-8 transform -rotate-12 transition-opacity duration-200 pointer-events-none">
-                            <span className="text-4xl font-extrabold text-green-400 border-8 border-green-400 rounded-2xl px-6 py-2 tracking-wider">CURTIR</span>
+                            <span className="text-3xl sm:text-4xl font-extrabold text-green-400 border-8 border-green-400 rounded-2xl px-6 py-2 tracking-wider">CURTIR</span>
                         </div>
                         <div style={{ opacity: actionOpacities.nope }} className="absolute top-16 right-8 transform rotate-12 transition-opacity duration-200 pointer-events-none">
-                            <span className="text-4xl font-extrabold text-red-500 border-8 border-red-500 rounded-2xl px-6 py-2 tracking-wider">NÃO CURTIR</span>
+                            <span className="text-3xl sm:text-4xl font-extrabold text-red-500 border-8 border-red-500 rounded-2xl px-6 py-2 tracking-wider">NÃO CURTIR</span>
                         </div>
                         <div style={{ opacity: actionOpacities.super }} className="absolute bottom-40 left-1/2 transform -translate-x-1/2 transition-opacity duration-200 pointer-events-none">
-                            <span className="text-4xl font-extrabold text-blue-400 border-8 border-blue-400 rounded-2xl px-6 py-2 tracking-wider">AMEI!</span>
+                            <span className="text-3xl sm:text-4xl font-extrabold text-blue-400 border-8 border-blue-400 rounded-2xl px-6 py-2 tracking-wider">AMEI!</span>
                         </div>
                     </>
                 )}
@@ -288,7 +288,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
                 <header className="p-5 pb-4 shrink-0 relative bg-gray-900/50 shadow-md">
                     <h1 className="text-3xl font-bold">{profile.apelido}, <span className="font-light">{profile.age}</span></h1>
                     <p className="text-gray-300">{profile.city}, {profile.state}</p>
-                    <button onClick={() => setShowDetails(false)} className="absolute top-4 right-4 text-white z-10 bg-black/20 rounded-full p-1">
+                    <button onClick={() => setShowDetails(false)} className="absolute top-4 right-4 text-white z-10 bg-black/20 rounded-full p-1" aria-label="Fechar detalhes do perfil">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
                     </button>
                 </header>
@@ -304,6 +304,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onSwipe, isTo
                                         alt={`${profile.name} ${index+1}`} 
                                         className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
                                         onClick={() => setSelectedImage(img)}
+                                        loading="lazy"
                                     />
                                 ))}
                             </div>
