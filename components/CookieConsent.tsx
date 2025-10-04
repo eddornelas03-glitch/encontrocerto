@@ -9,9 +9,14 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onConsent }) => {
     <div className="fixed inset-x-0 bottom-0 z-50 p-4 bg-gray-900/80 backdrop-blur-sm text-white shadow-lg">
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-sm text-gray-300 text-center md:text-left">
-          <h2 className="font-bold text-white mb-1">Sua privacidade é nossa prioridade</h2>
+          <h2 className="font-bold text-white mb-1">
+            Sua privacidade é nossa prioridade
+          </h2>
           <p>
-            Para aprimorar sua experiência e oferecer conteúdo relevante, nós e nossos parceiros utilizamos cookies. Eles nos ajudam a entender como você usa o <strong>Encontro Certo</strong> e a personalizar nossas ofertas. Você está no controle e pode gerenciar suas preferências.
+            Para aprimorar sua experiência e oferecer conteúdo relevante, nós e
+            nossos parceiros utilizamos cookies. Eles nos ajudam a entender como
+            você usa o <strong>Encontro Certo</strong> e a personalizar nossas
+            ofertas. Você está no controle e pode gerenciar suas preferências.
           </p>
         </div>
         <div className="flex-shrink-0 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -21,20 +26,20 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onConsent }) => {
           >
             Personalizar
           </button>
-           <div className="flex items-center gap-3 w-full sm:w-auto">
-             <button
-                onClick={() => onConsent('declined')}
-                className="font-semibold px-6 py-2 w-full rounded-full hover:bg-white/10 transition-colors"
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => onConsent('declined')}
+              className="font-semibold px-6 py-2 w-full rounded-full hover:bg-white/10 transition-colors"
             >
-                Recusar
+              Recusar
             </button>
             <button
-                onClick={() => onConsent('accepted')}
-                className="font-semibold px-6 py-2 w-full rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
+              onClick={() => onConsent('accepted')}
+              className="font-semibold px-6 py-2 w-full rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
             >
-                Aceitar
+              Aceitar
             </button>
-           </div>
+          </div>
         </div>
       </div>
     </div>

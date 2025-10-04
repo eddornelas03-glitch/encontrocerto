@@ -6,15 +6,26 @@ export interface UserPreferences {
   alturaMaxima: number; // in cm
   porteFisicoDesejado: ('Atlético' | 'Normal' | 'Robusto' | 'Indiferente')[];
   fumanteDesejado: ('Não' | 'Socialmente' | 'Sim' | 'Indiferente')[];
-  consumoAlcoolDesejado: ('Não bebe' | 'Socialmente' | 'Frequentemente' | 'Indiferente')[];
-  generoDesejado: ('Homens' | 'Mulheres' | 'Todos');
+  consumoAlcoolDesejado: (
+    | 'Não bebe'
+    | 'Socialmente'
+    | 'Frequentemente'
+    | 'Indiferente'
+  )[];
+  generoDesejado: 'Homens' | 'Mulheres' | 'Todos';
   signoDesejado: string[]; // Array of zodiac signs, or empty for any
   religiaoDesejada: string[]; // Array of religions, or empty for any
-  petsDesejado: ('Sim' | 'Não' | 'Indiferente');
-  pcdDesejado: ('Sim' | 'Não' | 'Indiferente');
+  petsDesejado: 'Sim' | 'Não' | 'Indiferente';
+  pcdDesejado: 'Sim' | 'Não' | 'Indiferente';
   disponibilidadeDesejada: string[]; // Array of availabilities, or empty for any
   nomeDesejado: string;
-  objetivoDesejado: ('Relacionamento sério' | 'Algo casual' | 'Amizade' | 'Não tenho certeza' | 'Indiferente')[];
+  objetivoDesejado: (
+    | 'Relacionamento sério'
+    | 'Algo casual'
+    | 'Amizade'
+    | 'Não tenho certeza'
+    | 'Indiferente'
+  )[];
 }
 
 export interface UserProfile {
@@ -29,7 +40,11 @@ export interface UserProfile {
   interests: string[];
   images: string[];
   gender: 'Homem' | 'Mulher' | 'Outro';
-  relationshipGoal: 'Relacionamento sério' | 'Algo casual' | 'Amizade' | 'Não tenho certeza';
+  relationshipGoal:
+    | 'Relacionamento sério'
+    | 'Algo casual'
+    | 'Amizade'
+    | 'Não tenho certeza';
   compatibility: number; // Percentage
   isPubliclySearchable: boolean;
   showLikes: boolean;
@@ -43,7 +58,7 @@ export interface UserProfile {
   diasPreferenciais: ('Dias de semana' | 'Fim de semana')[];
   horariosPreferenciais: ('Manhã' | 'Tarde' | 'Noite')[];
   numLikes: number;
-  
+
   // New fields from user prompt
   signo: string;
   religiao: string;
@@ -54,33 +69,41 @@ export interface UserProfile {
 }
 
 export interface Message {
-    id: number;
-    senderId: number | 'system';
-    text: string;
-    timestamp: string;
-    type?: 'user' | 'system' | 'ai_analysis';
+  id: number;
+  senderId: number | 'system';
+  text: string;
+  timestamp: string;
+  type?: 'user' | 'system' | 'ai_analysis';
 }
 
 export interface Meeting {
-    id: number;
-    proposerId: number;
-    proposedToId: number;
-    suggestedDate: string;
-    suggestedTime: string;
-    location?: string;
-    status: 'pending' | 'confirmed' | 'declined';
+  id: number;
+  proposerId: number;
+  proposedToId: number;
+  suggestedDate: string;
+  suggestedTime: string;
+  location?: string;
+  status: 'pending' | 'confirmed' | 'declined';
 }
 
 export interface User {
-    id: number;
-    email: string;
-    profile: UserProfile;
-    preferences: UserPreferences;
+  id: number;
+  email: string;
+  profile: UserProfile;
+  preferences: UserPreferences;
 }
 
 export interface Session {
-    user: User;
-    // In a real scenario, this would contain tokens
+  user: User;
+  // In a real scenario, this would contain tokens
 }
 
-export type View = 'landing' | 'login' | 'register' | 'explore' | 'matches' | 'chat' | 'my-profile' | 'edit-profile';
+export type View =
+  | 'landing'
+  | 'login'
+  | 'register'
+  | 'explore'
+  | 'matches'
+  | 'chat'
+  | 'my-profile'
+  | 'edit-profile';

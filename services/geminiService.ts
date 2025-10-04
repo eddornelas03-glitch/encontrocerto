@@ -1,7 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
-import type { UserProfile } from "../types";
+import { GoogleGenAI } from '@google/genai';
+import type { UserProfile } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: (window as any).process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
 
 const moderationPrompt = `Você é um moderador de um aplicativo de encontros. Analise o texto abaixo e responda apenas se ele for ofensivo.
 
@@ -23,7 +23,7 @@ Texto do usuário:
 """`;
 
 const formatProfileForPrompt = (profile: UserProfile) => {
-    return `
+  return `
 - Apelido: ${profile.apelido}
 - Objetivo: ${profile.relationshipGoal}
 - Bio: "${profile.bio}"
@@ -31,8 +31,6 @@ const formatProfileForPrompt = (profile: UserProfile) => {
     `.trim();
 };
 
-// Fix: Replaced function calls with undefined variables with simple string placeholders.
-// The placeholders are replaced with actual profile data in the getCompatibilityAnalysis function.
 const compatibilityPrompt = `Você é um especialista em relacionamentos e analista de compatibilidade para o aplicativo de namoro "Encontro Certo". Sua tarefa é analisar os perfis de dois usuários que acabaram de dar match e escrever uma análise curta, otimista e encorajadora explicando por que eles podem ser uma boa combinação.
 
 **Instruções:**
@@ -50,45 +48,45 @@ USER1_PLACEHOLDER
 USER2_PLACEHOLDER
 `;
 
-
 export const isTextOffensive = async (text: string): Promise<boolean> => {
-    if (!text || text.trim() === '') {
-        return false;
-    }
-    try {
-        const fullPrompt = moderationPrompt.replace('[TEXTO]', text);
-        
-        const response = await ai.models.generateContent({
-            // Fix: Corrected model name from 'gem-2.5-flash' to 'gemini-2.5-flash' to align with SDK guidelines.
-            model: 'gemini-2.5-flash',
-            contents: fullPrompt,
-        });
+  if (!text || text.trim() === '') {
+    return false;
+  }
+  try {
+    const fullPrompt = moderationPrompt.replace('[TEXTO]', text);
 
-        const resultText = response.text?.trim().toUpperCase();
-        return resultText === 'OFENSIVO';
-    } catch (error) {
-        console.error("Error calling Gemini API for moderation:", error);
-        // Fail open: if the moderation service fails, allow the content.
-        // In a real production app, you might want to handle this differently.
-        return false;
-    }
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: fullPrompt,
+    });
+
+    const resultText = response.text?.trim().toUpperCase();
+    return resultText === 'OFENSIVO';
+  } catch (error) {
+    console.error('Error calling Gemini API for moderation:', error);
+    // Fail open: if the moderation service fails, allow the content.
+    // In a real production app, you might want to handle this differently.
+    return false;
+  }
 };
 
-export const getCompatibilityAnalysis = async (user1Profile: UserProfile, user2Profile: UserProfile): Promise<string> => {
-    try {
-        const prompt = compatibilityPrompt
-            .replace('USER1_PLACEHOLDER', formatProfileForPrompt(user1Profile))
-            .replace('USER2_PLACEHOLDER', formatProfileForPrompt(user2Profile));
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
+export const getCompatibilityAnalysis = async (
+  user1Profile: UserProfile,
+  user2Profile: UserProfile,
+): Promise<string> => {
+  try {
+    const prompt = compatibilityPrompt
+      .replace('USER1_PLACEHOLDER', formatProfileForPrompt(user1Profile))
+      .replace('USER2_PLACEHOLDER', formatProfileForPrompt(user2Profile));
 
-        return response.text.trim();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
 
-    } catch (error) {
-        console.error("Error calling Gemini API for compatibility analysis:", error);
-        return "**✨ Por que vocês podem dar certo?**\n\nParece que vocês têm alguns interesses em comum! Explorar o que vocês compartilham pode ser um ótimo começo para uma conversa incrível.";
-    }
+    return response.text.trim();
+  } catch (error) {
+    console.error('Error calling Gemini API for compatibility analysis:', error);
+    return '**✨ Por que vocês podem dar certo?**\n\nParece que vocês têm alguns interesses em comum! Explorar o que vocês compartilham pode ser um ótimo começo para uma conversa incrível.';
+  }
 };

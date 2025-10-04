@@ -4,7 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Encontro Certo</title>
+    <title>Encontro Certo | Conexões Reais</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Encontre o amor da sua vida no Encontro Certo. Criamos conexões reais para relacionamentos duradouros. Explore perfis compatíveis e comece sua história." />
+    <meta name="keywords" content="relacionamento, namoro, encontros, amor, paquera, app de namoro" />
+    <meta name="author" content="Encontro Certo" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://encontrocerto.app/" />
+    <meta property="og:title" content="Encontro Certo | Conexões Reais" />
+    <meta property="og:description" content="Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros." />
+    <meta property="og:image" content="https://encontrocerto.app/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://encontrocerto.app/" />
+    <meta property="twitter:title" content="Encontro Certo | Conexões Reais" />
+    <meta property="twitter:description" content="Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros." />
+    <meta property="twitter:image" content="https://encontrocerto.app/og-image.png" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,9 +73,10 @@
   <body>
     <div id="root"></div>
     <script>
-      // Polyfill to make process.env.API_KEY available in the browser for development.
-      // In a real production app, this key should be managed securely via environment
-      // variables set in your hosting provider (e.g., Vercel, Netlify).
+      // Polyfill to make process.env.API_KEY available for the Gemini SDK.
+      // IMPORTANT: This is for demonstration purposes only. In a real production
+      // app, API keys must be handled on a secure backend server and not
+      // exposed on the client-side.
       window.process = {
         env: {
           API_KEY: "AIzaSyCf9JT42lkML0XooSw0wR0wKW0nTNLbFOw"
