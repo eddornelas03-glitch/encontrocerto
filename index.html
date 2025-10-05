@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encontro Certo | Conexões Reais</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Encontre o amor da sua vida no Encontro Certo. Criamos conexões reais para relacionamentos duradouros. Explore perfis compatíveis e comece sua história." />
+    <meta name="keywords" content="relacionamento, namoro, encontros, amor, paquera, app de namoro" />
+    <meta name="author" content="Encontro Certo" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://encontrocerto.app/" />
+    <meta property="og:title" content="Encontro Certo | Conexões Reais" />
+    <meta property="og:description" content="Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros." />
+    <meta property="og:image" content="https://encontrocerto.app/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://encontrocerto.app/" />
+    <meta property="twitter:title" content="Encontro Certo | Conexões Reais" />
+    <meta property="twitter:description" content="Encontre o amor da sua vida. Conexões reais para relacionamentos duradouros." />
+    <meta property="twitter:image" content="https://encontrocerto.app/og-image.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+      }
+      @keyframes scroll-up {
+        from { transform: translateY(0); }
+        to { transform: translateY(-50%); }
+      }
+      @keyframes scroll-down {
+        from { transform: translateY(-50%); }
+        to { transform: translateY(0); }
+      }
+      .animate-scroll-up {
+        animation: scroll-up 80s linear infinite;
+      }
+      .animate-scroll-down {
+        animation: scroll-down 80s linear infinite;
+      }
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 5px rgba(239, 68, 68, 0.4), 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 15px rgba(239, 68, 68, 0.8), 0 0 25px rgba(239, 68, 68, 0.6);
+        }
+      }
+      .animate-pulse-glow {
+        animation: pulse-glow 2.5s infinite ease-in-out;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.22.0",
+    "react-router": "https://aistudiocdn.com/react-router@^6.25.1",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.25.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Polyfill to make process.env.API_KEY available for the Gemini SDK.
+      // IMPORTANT: This is for demonstration purposes only. In a real production
+      // app, API keys must be handled on a secure backend server and not
+      // exposed on the client-side.
+      window.process = {
+        env: {
+          API_KEY: "AIzaSyCf9JT42lkML0XooSw0wR0wKW0nTNLbFOw"
+        }
+      };
+    </script>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
