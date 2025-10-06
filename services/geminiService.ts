@@ -67,7 +67,7 @@ USER2_PLACEHOLDER
 
 const formatMessagesForSuggestions = (
   messages: Message[],
-  currentUserId: number,
+  currentUserId: string,
   matchName: string,
 ) => {
   if (messages.length === 0) {
@@ -107,7 +107,7 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
     const fullPrompt = moderationPrompt.replace('[TEXTO]', text);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash-latest',
       contents: fullPrompt,
     });
 
@@ -124,24 +124,30 @@ export const isImageNude = async (file: File): Promise<boolean> => {
   try {
     const imagePart = await fileToGenerativePart(file);
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash-latest',
       contents: { parts: [{ text: nudityCheckPrompt }, imagePart] },
     });
 
     const result = await response.response;
+
+    // Check if the prompt was blocked due to safety settings
+    if (result.promptFeedback?.blockReason) {
+      console.log(`Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`);
+      return true;
+    }
+    
     const text = result.text();
 
     if (!text || text.trim() === '') {
-      console.warn(
-        'Gemini response for nudity check was empty. Assuming nudity for safety.',
-      );
-      return true;
+      console.warn('Gemini response for nudity check was empty. Assuming not nude as it was not blocked.');
+      return false;
     }
 
     const resultText = text.trim().toUpperCase();
     return resultText === 'SIM';
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
+    // If a true error occurs (network, etc.), fail safely by blocking the image.
     return true;
   }
 };
@@ -156,7 +162,7 @@ export const getCompatibilityAnalysis = async (
       .replace('USER2_PLACEHOLDER', formatProfileForPrompt(user2Profile));
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash-latest',
       contents: prompt,
     });
 
@@ -190,7 +196,7 @@ export const getMessageSuggestions = async (
       );
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash-latest',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
