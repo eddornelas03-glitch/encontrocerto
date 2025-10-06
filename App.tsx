@@ -14,11 +14,6 @@ const Login = lazy(() =>
 const Register = lazy(() =>
   import('./components/Register').then((module) => ({ default: module.Register })),
 );
-const FakeGoogleLogin = lazy(() =>
-  import('./pages/FakeGoogleLogin').then((module) => ({
-    default: module.FakeGoogleLogin,
-  })),
-);
 const Explore = lazy(() =>
   import('./pages/Explore').then((module) => ({ default: module.Explore })),
 );
@@ -47,9 +42,9 @@ const LoadingFallback: React.FC = () => (
 const App: React.FC = () => {
   const { session, user, loading } = useAuth();
   const navigate = useNavigate();
-  const [authView, setAuthView] = useState<
-    'landing' | 'login' | 'register' | 'google-login'
-  >('landing');
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>(
+    'landing',
+  );
 
   const [matches, setMatches] = useState<UserProfile[]>([]);
   const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
@@ -84,10 +79,6 @@ const App: React.FC = () => {
     setNewMatch(null);
   }, [newMatch, navigate]);
 
-  const handleGoogleLoginSuccess = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
-  };
-
   const handleTestLogin = async () => {
     await supabase.auth.signInForTesting();
   };
@@ -101,14 +92,10 @@ const App: React.FC = () => {
       let AuthComponent;
       const handleBackToLanding = () => setAuthView('landing');
       switch (authView) {
-        case 'google-login':
-          AuthComponent = <FakeGoogleLogin onSuccess={handleGoogleLoginSuccess} />;
-          break;
         case 'login':
           AuthComponent = (
             <Login
               onNavigateToRegister={() => setAuthView('register')}
-              onNavigateToGoogleLogin={() => setAuthView('google-login')}
               onBackToLanding={handleBackToLanding}
             />
           );
@@ -117,7 +104,6 @@ const App: React.FC = () => {
           AuthComponent = (
             <Register
               onNavigateToLogin={() => setAuthView('login')}
-              onNavigateToGoogleLogin={() => setAuthView('google-login')}
               onBackToLanding={handleBackToLanding}
             />
           );
