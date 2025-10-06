@@ -147,8 +147,9 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     return resultText === 'SIM';
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
-    // If a true error occurs (network, etc.), fail safely by blocking the image.
-    return true;
+    // If a true error occurs (network, etc.), fail OPEN by assuming the image is safe.
+    // This prevents blocking all uploads if the API is down.
+    return false;
   }
 };
 
