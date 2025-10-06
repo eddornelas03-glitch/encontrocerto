@@ -4,9 +4,11 @@ import type { UserProfile, UserPreferences } from '../types';
 import { isTextOffensive, isImageNude } from '../services/geminiService';
 import { supabase } from '../services/supabaseService';
 import { BRAZILIAN_STATES } from '../data/brazilianLocations';
+import { useToast } from '../context/ToastContext';
 
 export const useProfileEditor = (onSaveSuccess: () => void) => {
   const { user, updateUser } = useAuth();
+  const { showToast } = useToast();
 
   if (!user) {
     throw new Error('useProfileEditor must be used within an authenticated context');
@@ -221,6 +223,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       setBioError(
         'Sua bio viola as diretrizes da comunidade. Por favor, revise o texto.',
       );
+      showToast('Sua bio contém texto ofensivo.', 'error');
       setIsSaving(false);
       return;
     }
@@ -228,15 +231,16 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     const { error, updatedProfile, updatedPreferences } = await supabase.updateUserProfileAndPreferences(profile, preferences);
 
     if (error) {
-        // Handle error, maybe show a toast
         console.error("Failed to save profile", error);
+        showToast('Erro ao salvar o perfil. Tente novamente.', 'error');
     } else if (updatedProfile && updatedPreferences) {
         updateUser({ ...user, profile: updatedProfile, preferences: updatedPreferences });
+        showToast('Perfil salvo com sucesso!', 'success');
         onSaveSuccess();
     }
     
     setIsSaving(false);
-  }, [isSaving, profile, preferences, updateUser, user, onSaveSuccess]);
+  }, [isSaving, profile, preferences, updateUser, user, onSaveSuccess, showToast]);
 
   return {
     profile,

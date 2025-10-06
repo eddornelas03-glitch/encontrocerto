@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,9 +14,11 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <AuthProvider>
-      <HashRouter>
-        <App />
-      </HashRouter>
+      <ToastProvider>
+        <HashRouter>
+          <App />
+        </HashRouter>
+      </ToastProvider>
     </AuthProvider>
   </React.StrictMode>,
 );
