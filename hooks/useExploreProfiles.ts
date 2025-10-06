@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
   const prefs = currentUser.preferences;
 
+  // --- Verificação de Interesse Mútuo ---
+  // 1. O usuário atual está interessado no gênero do perfil?
   if (currentUser.profile.interesseEm !== 'Todos') {
     if (
       currentUser.profile.interesseEm === 'Homens' &&
@@ -18,6 +20,21 @@ const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
     )
       return false;
   }
+
+  // 2. O perfil está interessado no gênero do usuário atual?
+  if (profile.interesseEm !== 'Todos') {
+    if (
+      profile.interesseEm === 'Homens' &&
+      currentUser.profile.gender !== 'Homem'
+    )
+      return false;
+    if (
+      profile.interesseEm === 'Mulheres' &&
+      currentUser.profile.gender !== 'Mulher'
+    )
+      return false;
+  }
+  // --- Fim da Verificação de Interesse Mútuo ---
 
   if (prefs.generoDesejado !== 'Todos') {
     if (prefs.generoDesejado === 'Homens' && profile.gender !== 'Homem')
