@@ -125,7 +125,7 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     const imagePart = await fileToGenerativePart(file);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash-latest', // Use the modern, multimodal model
+      model: 'gemini-pro-vision', // Use the stable vision model
       contents: [{ parts: [{ text: nudityCheckPrompt }, imagePart] }],
     });
 
