@@ -148,10 +148,11 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     return false;
   } catch (error) {
     console.warn(
-      'Falha na verificação de imagem com a IA. Permitindo o upload.',
+      'A verificação de imagem falhou tecnicamente. A decisão de upload será passada para o chamador.',
       error,
     );
-    return false;
+    // Re-throw the error so the calling function can handle the technical failure case.
+    throw error;
   }
 };
 

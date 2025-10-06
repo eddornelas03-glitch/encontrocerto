@@ -179,33 +179,32 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
 
     setIsAnalyzingImage(true);
     setImageError('');
-    try {
-        const isNude = await isImageNude(file);
-        if (isNude) {
-            setImageError('Nudez detectada. Esta foto viola nossas diretrizes e não pode ser enviada.');
-            return;
-        }
-
+    
+    const uploadFile = async () => {
         const { data, error } = await supabase.uploadProfileImage(file);
-
         if (error || !data) {
             console.error("Image upload failed", error);
             setImageError("Ocorreu um erro ao enviar a imagem. Tente novamente.");
-            return;
-        }
-
-        setProfile(prev => ({
-            ...prev,
-            images: [...prev.images, data.publicUrl]
-        }));
-
-    } catch (error) {
-        console.error("Image processing failed", error);
-        if (error instanceof Error) {
-            setImageError(error.message);
         } else {
-            setImageError("Ocorreu um erro ao processar a imagem. Tente novamente.");
+            setProfile(prev => ({
+                ...prev,
+                images: [...prev.images, data.publicUrl]
+            }));
         }
+    };
+
+    try {
+        const isNude = await isImageNude(file);
+        if (isNude) {
+            setImageError('Imagem não permitida. Escolha uma foto apropriada.');
+        } else {
+            await uploadFile();
+        }
+    } catch (error) {
+        // This catch block handles technical failures from isImageNude.
+        // As requested, we log the error and proceed with the upload.
+        console.warn("A verificação da imagem falhou, mas o upload será permitido:", error);
+        await uploadFile();
     } finally {
         setIsAnalyzingImage(false);
         e.target.value = '';
