@@ -6,7 +6,6 @@ import React, {
   useCallback,
 } from 'react';
 import { supabase as supabaseService, mapProfileFromDb } from '../services/supabaseService';
-import { supabase as supabaseClient } from '../src/integrations/supabase/client';
 import type { Session, User, UserProfile, UserPreferences } from '../types';
 
 // Default preferences for new or incomplete profiles
@@ -48,7 +47,7 @@ const AuthContext = createContext<AuthContextType>({
   updateUser: () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+export const AuthProvider: React.FC<{ children: React.Node }> = ({
   children,
 }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -60,46 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       data: { subscription },
     } = supabaseService.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        let profileData = await supabaseService.fetchFullUserProfile(session.user.id);
-
-        // If user is authenticated but has no profile, create a default one
-        if (!profileData) {
-          console.log(`No profile found for user ${session.user.id}, creating one.`);
-          const { data: newProfile, error } = await supabaseClient
-            .from('profiles')
-            .insert({
-              id: session.user.id,
-              nickname: session.user.user_metadata.apelido || session.user.email?.split('@')[0] || 'Novo Usuário',
-              interested_in: session.user.user_metadata.interested_in || 'Todos',
-              // Sensible defaults
-              age: 18,
-              bio: 'Bem-vindo(a) ao Encontro Certo! Edite seu perfil para começar.',
-              city: 'Não informado',
-              state: 'XX',
-              interests: [],
-              photos: [],
-              relationshipgoal: 'Não tenho certeza',
-              height: 170,
-              body_type: 'Prefiro não dizer',
-              smokes: 'Prefiro não dizer',
-              drinks: 'Prefiro não dizer',
-              zodiac_sign: 'Indiferente',
-              religion: 'Indiferente',
-              pets: 'Não',
-              languages: ['Português'],
-              disability: 'Prefiro não dizer',
-              showlikes: true,
-              show_in_public_search: true,
-            })
-            .select()
-            .single();
-          
-          if (error) {
-            console.error("Failed to create profile for existing user:", error);
-          } else {
-            profileData = newProfile;
-          }
-        }
+        const profileData = await supabaseService.fetchFullUserProfile(session.user.id);
 
         if (profileData) {
           const fullUser: User = {
@@ -111,7 +71,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(fullUser);
           setSession({ user: fullUser });
         } else {
-          // If profile still doesn't exist (e.g., creation failed), treat as logged out
+          // If a user is authenticated but has no profile (e.g., old account after a wipe),
+          // force a full sign out to prevent them from getting stuck.
+          console.warn(`User ${session.user.id} authenticated but has no profile. Forcing logout.`);
+          await supabaseService.auth.signOut();
           setUser(null);
           setSession(null);
         }
