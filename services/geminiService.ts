@@ -111,12 +111,11 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
       contents: fullPrompt,
     });
 
-    const resultText = response.text?.trim().toUpperCase();
+    const result = await response.response;
+    const resultText = result.text().trim().toUpperCase();
     return resultText === 'OFENSIVO';
   } catch (error) {
     console.error('Error calling Gemini API for moderation:', error);
-    // Fail open: if the moderation service fails, allow the content.
-    // In a real production app, you might want to handle this differently.
     return false;
   }
 };
@@ -129,24 +128,20 @@ export const isImageNude = async (file: File): Promise<boolean> => {
       contents: { parts: [{ text: nudityCheckPrompt }, imagePart] },
     });
 
-    // The Gemini API may block a response due to safety filters. In our case,
-    // this is a strong signal that the image is inappropriate. We treat this as
-    // a positive detection for nudity. `response.text` would be empty in this case.
-    if (!response.text || response.text.trim() === '') {
+    const result = await response.response;
+    const text = result.text();
+
+    if (!text || text.trim() === '') {
       console.warn(
         'Gemini response for nudity check was empty. Assuming nudity for safety.',
       );
       return true;
     }
 
-    const resultText = response.text.trim().toUpperCase();
+    const resultText = text.trim().toUpperCase();
     return resultText === 'SIM';
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
-    // Fail closed: If any error occurs during the API call (including safety
-    // blocks that throw an error), we assume the image is not safe. This ensures
-    // that a generic error message is not shown to the user, and instead, it's
-    // treated as a nudity detection, as requested.
     return true;
   }
 };
@@ -165,7 +160,8 @@ export const getCompatibilityAnalysis = async (
       contents: prompt,
     });
 
-    return response.text.trim();
+    const result = await response.response;
+    return result.text().trim();
   } catch (error) {
     console.error('Error calling Gemini API for compatibility analysis:', error);
     return '**✨ Por que vocês podem dar certo?**\n\nParece que vocês têm alguns interesses em comum! Explorar o que vocês compartilham pode ser um ótimo começo para uma conversa incrível.';
@@ -219,7 +215,8 @@ export const getMessageSuggestions = async (
       },
     });
 
-    const jsonString = response.text.trim();
+    const result = await response.response;
+    const jsonString = result.text().trim();
     const suggestions: MessageSuggestion[] = JSON.parse(jsonString);
 
     if (Array.isArray(suggestions) && suggestions.length > 0) {
