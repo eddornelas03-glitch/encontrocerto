@@ -123,20 +123,21 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 export const isImageNude = async (file: File): Promise<boolean> => {
   try {
     const imagePart = await fileToGenerativePart(file);
-    const response = await ai.models.generateContent({
-      model: 'gemini-pro-vision',
-      contents: [{ parts: [{ text: nudityCheckPrompt }, imagePart] }],
-    });
+    
+    // Get the specific model for vision
+    const model = ai.getGenerativeModel({ model: "gemini-pro-vision" });
 
-    const result = await response.response;
+    // The prompt and image parts can be passed as an array
+    const result = await model.generateContent([nudityCheckPrompt, imagePart]);
+    const response = await result.response;
 
     // If Gemini's own safety filter blocks it, consider it unsafe.
-    if (result.promptFeedback?.blockReason) {
-      console.warn(`Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`);
+    if (response.promptFeedback?.blockReason) {
+      console.warn(`Image blocked by Gemini safety settings: ${response.promptFeedback.blockReason}`);
       return true;
     }
     
-    const text = result.text()?.trim().toUpperCase();
+    const text = response.text()?.trim().toUpperCase();
 
     // More robust check: look for the keyword instead of an exact match.
     if (text?.includes('SIM')) {
@@ -148,14 +149,11 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     }
 
     // If the response is something else, it's an unexpected state.
-    // It's safer to throw an error and let the caller decide how to handle it.
     console.warn(`Unexpected response from nudity check: "${text}"`);
     throw new Error('A verificação da imagem falhou ao receber uma resposta inesperada.');
 
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
-    // Re-throw the error to be handled by the calling function.
-    // This is better than failing open (return false) or failing closed (return true).
     throw new Error('Não foi possível verificar a imagem. Por favor, tente novamente mais tarde.');
   }
 };
