@@ -19,14 +19,33 @@ export const Login: React.FC<LoginProps> = ({
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+
+    // 1. Attempt to sign in
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) {
+
+    // 2. Handle initial sign-in error (e.g., wrong password)
+    if (signInError) {
       setError('Falha no login. Verifique suas credenciais.');
+      setLoading(false);
+      return;
     }
-    // The onAuthStateChange in AuthContext will handle navigation
+
+    // 3. If sign-in is successful, check for a profile
+    if (data.user) {
+      const profileData = await supabase.fetchFullUserProfile(data.user.id);
+
+      // 4. If no profile, this is an invalid login for our app
+      if (!profileData) {
+        // Manually sign out to prevent AuthContext from picking up a temporary session
+        await supabase.auth.signOut();
+        setError('Falha no login. Verifique suas credenciais.');
+      }
+      // 5. If profile exists, AuthContext's onAuthStateChange will handle the rest
+    }
+
     setLoading(false);
   };
 
@@ -38,7 +57,7 @@ export const Login: React.FC<LoginProps> = ({
         aria-label="Voltar para a página inicial"
       >
         <svg
-          xmlns="http://www.w3.org/2000/svg"
+          xmlns="http://www.w.org/2000/svg"
           className="h-8 w-8"
           fill="none"
           viewBox="0 0 24 24"
