@@ -1,5 +1,5 @@
-import { supabase as supabaseClient } from '../integrations/supabase/client';
-import type { UserProfile, UserPreferences, Message } from '../types';
+import { supabase as supabaseClient } from '@/src/integrations/supabase/client';
+import type { UserProfile, UserPreferences, Message } from './types';
 
 // --- Profile Data Mapping ---
 // Maps the app's UserProfile object to the Supabase 'profiles' table columns
