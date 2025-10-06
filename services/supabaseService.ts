@@ -25,6 +25,7 @@ const mapProfileToDb = (profile: UserProfile) => ({
   disability_type: profile.pcdTipo,
   showlikes: profile.showLikes,
   show_in_public_search: profile.isPubliclySearchable,
+  gender: profile.gender,
 });
 
 // Maps a row from the Supabase 'profiles' table to the app's UserProfile type

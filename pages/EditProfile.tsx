@@ -238,6 +238,19 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <Label htmlFor="gender">Eu sou</Label>
+              <Select
+                id="gender"
+                name="gender"
+                value={profile.gender}
+                onChange={handleProfileChange}
+              >
+                <option>Homem</option>
+                <option>Mulher</option>
+                <option>Outro</option>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="altura">Altura (cm)</Label>
               <Input
                 type="number"
