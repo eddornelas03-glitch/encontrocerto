@@ -123,38 +123,43 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 export const isImageNude = async (file: File): Promise<boolean> => {
   try {
     const imagePart = await fileToGenerativePart(file);
-    
-    // Get the specific model for vision
-    const model = ai.getGenerativeModel({ model: "gemini-pro-vision" });
 
-    // The prompt and image parts can be passed as an array
-    const result = await model.generateContent([nudityCheckPrompt, imagePart]);
-    const response = await result.response;
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash-latest', // Use the modern, multimodal model
+      contents: [{ parts: [{ text: nudityCheckPrompt }, imagePart] }],
+    });
+
+    const result = await response.response;
 
     // If Gemini's own safety filter blocks it, consider it unsafe.
-    if (response.promptFeedback?.blockReason) {
-      console.warn(`Image blocked by Gemini safety settings: ${response.promptFeedback.blockReason}`);
+    if (result.promptFeedback?.blockReason) {
+      console.warn(
+        `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
+      );
       return true;
     }
-    
-    const text = response.text()?.trim().toUpperCase();
+
+    const text = result.text()?.trim().toUpperCase();
 
     // More robust check: look for the keyword instead of an exact match.
     if (text?.includes('SIM')) {
       return true;
     }
-    
+
     if (text?.includes('NAO')) {
       return false;
     }
 
     // If the response is something else, it's an unexpected state.
     console.warn(`Unexpected response from nudity check: "${text}"`);
-    throw new Error('A verificação da imagem falhou ao receber uma resposta inesperada.');
-
+    throw new Error(
+      'A verificação da imagem falhou ao receber uma resposta inesperada.',
+    );
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
-    throw new Error('Não foi possível verificar a imagem. Por favor, tente novamente mais tarde.');
+    throw new Error(
+      'Não foi possível verificar a imagem. Por favor, tente novamente mais tarde.',
+    );
   }
 };
 
