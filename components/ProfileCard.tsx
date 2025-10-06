@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import type { UserProfile, UserPreferences } from '../types';
+import { DefaultAvatar } from './DefaultAvatar';
 
 interface ProfileCardProps {
   profile: UserProfile;
@@ -360,12 +361,16 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         onClick={handleClick}
       >
         <div className="relative w-full h-full bg-gray-700 rounded-2xl shadow-xl overflow-hidden">
-          <img
-            src={profile.images[0]}
-            alt={profile.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          {profile.images.length > 0 ? (
+            <img
+              src={profile.images[0]}
+              alt={profile.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <DefaultAvatar />
+          )}
 
           {isTopCard && !showDetails && (
             <KeyboardHint onHintClick={handleManualSwipe} />
@@ -464,16 +469,22 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
             <div className="p-5 pt-4 space-y-6">
               <div>
                 <div className="flex overflow-x-auto space-x-2 pb-2 -mx-5 px-5 snap-x snap-mandatory">
-                  {profile.images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`${profile.name} ${index + 1}`}
-                      className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
-                      onClick={() => setSelectedImage(img)}
-                      loading="lazy"
-                    />
-                  ))}
+                  {profile.images.length > 0 ? (
+                    profile.images.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`${profile.name} ${index + 1}`}
+                        className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
+                        onClick={() => setSelectedImage(img)}
+                        loading="lazy"
+                      />
+                    ))
+                  ) : (
+                    <div className="w-40 h-52 rounded-lg flex-shrink-0 snap-center">
+                      <DefaultAvatar className="rounded-lg" />
+                    </div>
+                  )}
                 </div>
               </div>
 

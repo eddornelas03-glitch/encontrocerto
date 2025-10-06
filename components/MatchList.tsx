@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import type { UserProfile } from '../types';
+import { DefaultAvatar } from './DefaultAvatar';
 
 interface MatchListProps {
   matches: UserProfile[];
@@ -32,12 +33,18 @@ const MatchListComponent: React.FC<MatchListProps> = ({ matches }) => {
               key={match.id}
               className="flex items-center p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors"
             >
-              <img
-                src={match.images[0]}
-                alt={match.name}
-                className="w-16 h-16 rounded-full object-cover"
-                loading="lazy"
-              />
+              <div className="w-16 h-16 rounded-full object-cover overflow-hidden flex-shrink-0">
+                {match.images.length > 0 ? (
+                  <img
+                    src={match.images[0]}
+                    alt={match.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <DefaultAvatar />
+                )}
+              </div>
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-gray-100">
                   {match.name}

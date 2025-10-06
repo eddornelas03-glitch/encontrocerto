@@ -1,5 +1,6 @@
 import React from 'react';
 import type { UserProfile } from '../types';
+import { DefaultAvatar } from './DefaultAvatar';
 
 const HeartIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-pink-500">
@@ -25,8 +26,12 @@ export const MatchProfileView: React.FC<MatchProfileViewProps> = ({ profile, onB
             </header>
 
             <main className="overflow-y-auto pb-24">
-                <div className="relative">
-                    <img src={profile.images[0]} alt={profile.name} className="w-full h-80 object-cover" loading="lazy" />
+                <div className="relative w-full h-80 bg-gray-800">
+                    {profile.images.length > 0 ? (
+                        <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                        <DefaultAvatar />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
                     <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-sm">
                         <HeartIcon/>

@@ -147,7 +147,7 @@ const App: React.FC = () => {
         {newMatch && user && (
           <MatchModal
             match={newMatch}
-            currentUserImage={user.profile.images[0]}
+            currentUserProfile={user.profile}
             onClose={closeMatchModal}
             onSendMessage={openChatFromMatch}
           />

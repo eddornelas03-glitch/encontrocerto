@@ -5,6 +5,7 @@ import { LandingHeader } from '../components/LandingHeader';
 import { PolicyModal } from '../components/PolicyModal';
 import { policyContent } from '../data/policyContent';
 import { chunkArray } from '../utils';
+import { DefaultAvatar } from '../components/DefaultAvatar';
 
 interface LandingProps {
   onNavigateToLogin: () => void;
@@ -18,12 +19,16 @@ const BackgroundProfileCard: React.FC<{
   <div
     className={`relative w-full aspect-[3/4] bg-gray-700 rounded-2xl shadow-xl overflow-hidden ${className}`}
   >
-    <img
-      src={profile.images[0]}
-      alt={profile.name}
-      className="w-full h-full object-cover"
-      loading="lazy"
-    />
+    {profile.images.length > 0 ? (
+      <img
+        src={profile.images[0]}
+        alt={profile.name}
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+    ) : (
+      <DefaultAvatar />
+    )}
     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20"></div>
     <div className="absolute inset-0 p-3 flex flex-col justify-end text-white">
       <h1 className="text-lg font-bold">

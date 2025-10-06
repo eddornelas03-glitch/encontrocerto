@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import type { UserProfile } from '../types';
 import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
+import { DefaultAvatar } from './DefaultAvatar';
 
 interface MatchModalProps {
   match: UserProfile;
-  currentUserImage: string;
+  currentUserProfile: UserProfile;
   onClose: () => void;
   onSendMessage: () => void;
 }
 
 export const MatchModal: React.FC<MatchModalProps> = ({
   match,
-  currentUserImage,
+  currentUserProfile,
   onClose,
   onSendMessage,
 }) => {
@@ -55,16 +56,28 @@ export const MatchModal: React.FC<MatchModalProps> = ({
         </p>
 
         <div className="flex justify-center items-center my-6 space-x-[-2rem]">
-          <img
-            src={currentUserImage}
-            alt="Você"
-            className="w-28 h-28 rounded-full object-cover border-4 border-red-500 shadow-lg transform -rotate-12"
-          />
-          <img
-            src={match.images[0]}
-            alt={match.name}
-            className="w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-lg transform rotate-12"
-          />
+          <div className="w-28 h-28 rounded-full object-cover border-4 border-red-500 shadow-lg transform -rotate-12 overflow-hidden">
+            {currentUserProfile.images.length > 0 ? (
+              <img
+                src={currentUserProfile.images[0]}
+                alt="Você"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <DefaultAvatar />
+            )}
+          </div>
+          <div className="w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-lg transform rotate-12 overflow-hidden">
+            {match.images.length > 0 ? (
+              <img
+                src={match.images[0]}
+                alt={match.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <DefaultAvatar />
+            )}
+          </div>
         </div>
 
         <div className="bg-white/10 p-3 rounded-lg mb-6">
