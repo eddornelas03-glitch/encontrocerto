@@ -50,7 +50,8 @@ const filterProfile = (profile: UserProfile, currentUser: User): boolean => {
       return false;
     }
   } else {
-    if (profile.distanceFromUser > prefs.distanciaMaxima) return false;
+    // Distance filtering is mocked for now as we don't have real location data
+    // if (profile.distanceFromUser > prefs.distanciaMaxima) return false;
   }
 
   if (profile.age < prefs.idadeMinima || profile.age > prefs.idadeMaxima)
@@ -216,19 +217,15 @@ export const useExploreProfiles = (
   }, [loadAndFilterProfiles]);
 
   const handleSwipe = useCallback(
-    (profile: UserProfile, direction: 'left' | 'right' | 'super') => {
-      // The ProfileCard handles its own animation. We just wait for it to finish
-      // before removing it from the DOM by updating the index.
+    async (profile: UserProfile, direction: 'left' | 'right' | 'super') => {
+      const liked = direction === 'right' || direction === 'super';
+      const { isMatch } = await supabase.handleSwipe(profile.id, liked);
+
+      if (isMatch || direction === 'super') {
+        onNewMatch(profile);
+      }
+      
       setTimeout(() => {
-        if (direction === 'right') {
-          // Simulate a match 40% of the time for compatible profiles
-          if (profile.compatibility > 65 && Math.random() < 0.4) {
-            onNewMatch(profile);
-          }
-        } else if (direction === 'super') {
-          // Super likes always result in a match in this mock
-          onNewMatch(profile);
-        }
         setCurrentIndex((prevIndex) => prevIndex + 1);
       }, 400);
     },

@@ -1,412 +1,271 @@
-import type { UserProfile, User, Session, UserPreferences } from '../types';
+import { supabase as supabaseClient } from '../integrations/supabase/client';
+import type { UserProfile, UserPreferences, Message } from '../types';
 
-// --- MOCK DATABASE ---
-const createMockProfiles = (count: number): UserProfile[] => {
-  const goals: UserProfile['relationshipGoal'][] = [
-    'Relacionamento sério',
-    'Algo casual',
-    'Amizade',
-    'Não tenho certeza',
-  ];
-  const names = [
-    ['Ana', 'Mulher'],
-    ['Carlos', 'Homem'],
-    ['Mariana', 'Mulher'],
-    ['Pedro', 'Homem'],
-    ['Juliana', 'Mulher'],
-    ['Lucas', 'Homem'],
-    ['Fernanda', 'Mulher'],
-    ['Rafael', 'Homem'],
-    ['Beatriz', 'Mulher'],
-    ['Thiago', 'Homem'],
-  ];
-  const cities = [
-    'São Paulo, SP',
-    'Rio de Janeiro, RJ',
-    'Belo Horizonte, MG',
-    'Salvador, BA',
-    'Curitiba, PR',
-  ];
-  const taglines = [
-    'Vivendo um dia de cada vez.',
-    'Em busca de boas histórias.',
-    'Apaixonado(a) por viagens e café.',
-    'Música e amigos são tudo.',
-  ];
-  const interests = [
-    [['Praia', 'Cinema', 'Cozinhar']],
-    [['Trilhas', 'Fotografia', 'Rock']],
-    [['Leitura', 'Yoga', 'Vinho']],
-    [['Games', 'Séries', 'Pizza']],
-  ];
-  const portes: UserProfile['porteFisico'][] = [
-    'Atlético',
-    'Normal',
-    'Robusto',
-    'Prefiro não dizer',
-  ];
-  const fuma: UserProfile['fumante'][] = [
-    'Não',
-    'Socialmente',
-    'Sim',
-    'Prefiro não dizer',
-  ];
-  const bebe: UserProfile['consumoAlcool'][] = [
-    'Não bebe',
-    'Socialmente',
-    'Frequentemente',
-    'Prefiro não dizer',
-  ];
-  const signos = [
-    'Áries',
-    'Touro',
-    'Gêmeos',
-    'Câncer',
-    'Leão',
-    'Virgem',
-    'Libra',
-    'Escorpião',
-    'Sagitário',
-    'Capricórnio',
-    'Aquário',
-    'Peixes',
-  ];
-  const religioes = [
-    'Católica',
-    'Evangélica',
-    'Espírita',
-    'Ateu(a)',
-    'Agnóstico(a)',
-    'Outra',
-  ];
-  const pets: UserProfile['pets'][] = ['Sim', 'Não'];
-  const idiomas = [
-    ['Português'],
-    ['Português', 'Inglês'],
-    ['Português', 'Espanhol'],
-  ];
-  const disponibilidades: UserProfile['disponibilidade'][] = [
-    'Hoje',
-    'Essa semana',
-    'Online por enquanto',
-    'Sem pressa',
-  ];
-  const pcds: UserProfile['pcd'][] = [
-    'Não',
-    'Não',
-    'Não',
-    'Não',
-    'Sim',
-    'Prefiro não dizer',
-  ];
-  const pcdTipos: NonNullable<UserProfile['pcdTipo']>[] = [
-    'Física',
-    'Mental',
-    'Ambas',
-    'Prefiro não dizer',
-  ];
+// --- Profile Data Mapping ---
+// Maps the app's UserProfile object to the Supabase 'profiles' table columns
+const mapProfileToDb = (profile: UserProfile) => ({
+  nickname: profile.apelido,
+  age: profile.age,
+  bio: profile.bio,
+  city: profile.city,
+  state: profile.state,
+  interests: profile.interests,
+  photos: profile.images,
+  relationshipgoal: profile.relationshipGoal,
+  height: profile.altura,
+  body_type: profile.porteFisico,
+  smokes: profile.fumante,
+  drinks: profile.consumoAlcool,
+  interested_in: profile.interesseEm,
+  zodiac_sign: profile.signo,
+  religion: profile.religiao,
+  pets: profile.pets,
+  languages: profile.idiomas,
+  disability: profile.pcd,
+  disability_type: profile.pcdTipo,
+  showlikes: profile.showLikes,
+  show_in_public_search: profile.isPubliclySearchable,
+});
 
-  return Array.from({ length: count }, (_, i) => {
-    const [name, gender] = names[i % names.length];
-    const pcdValue = pcds[i % pcds.length];
+// Maps a row from the Supabase 'profiles' table to the app's UserProfile type
+const mapProfileFromDb = (dbProfile: any): UserProfile => ({
+  id: dbProfile.id,
+  name: dbProfile.nickname, // Using nickname as name
+  apelido: dbProfile.nickname,
+  age: dbProfile.age,
+  bio: dbProfile.bio,
+  city: dbProfile.city,
+  state: dbProfile.state,
+  interests: dbProfile.interests || [],
+  images: dbProfile.photos || ['https://picsum.photos/seed/placeholder/600/800'],
+  relationshipGoal: dbProfile.relationshipgoal,
+  altura: dbProfile.height,
+  porteFisico: dbProfile.body_type,
+  fumante: dbProfile.smokes,
+  consumoAlcool: dbProfile.drinks,
+  interesseEm: dbProfile.interested_in,
+  signo: dbProfile.zodiac_sign,
+  religiao: dbProfile.religion,
+  pets: dbProfile.pets,
+  idiomas: dbProfile.languages || [],
+  pcd: dbProfile.disability,
+  pcdTipo: dbProfile.disability_type,
+  showLikes: dbProfile.showlikes,
+  isPubliclySearchable: dbProfile.show_in_public_search,
+  // These fields are calculated client-side
+  tagline: '',
+  compatibility: 0,
+  distanceFromUser: 0,
+  diasPreferenciais: [],
+  horariosPreferenciais: [],
+  numLikes: 0,
+  disponibilidade: 'Sem pressa',
+  gender: dbProfile.gender || 'Outro',
+});
 
-    const profile: UserProfile = {
-      id: i + 2, // Start user IDs from 2
-      name: name,
-      apelido: name,
-      age: 22 + (i % 15),
-      city: cities[i % cities.length].split(', ')[0],
-      state: cities[i % cities.length].split(', ')[1],
-      tagline: taglines[i % taglines.length],
-      bio: `Olá! Sou ${name}, uma pessoa tranquila que adora ${
-        interests[i % interests.length][0]
-      }. Buscando alguém com bom humor e que goste de conversar. Vamos tomar um café?`,
-      interests: interests[i % interests.length][0],
-      images: Array.from(
-        { length: 3 },
-        (_, j) => `https://picsum.photos/seed/${i + 2 + j}/600/800`,
-      ),
-      gender: gender as UserProfile['gender'],
-      relationshipGoal: goals[i % goals.length],
-      compatibility: 70 + (i % 30),
-      isPubliclySearchable: Math.random() > 0.3,
-      showLikes: Math.random() > 0.5,
-      distanceFromUser: Math.floor(Math.random() * 199) + 2, // Random distance from 2 to 200 km
-      altura: 160 + (i % 35),
-      porteFisico: portes[i % portes.length],
-      fumante: fuma[i % fuma.length],
-      consumoAlcool: bebe[i % bebe.length],
-      interesseEm: gender === 'Homem' ? 'Mulheres' : 'Homens',
-      diasPreferenciais:
-        i % 2 === 0 ? ['Fim de semana'] : ['Dias de semana', 'Fim de semana'],
-      horariosPreferenciais: i % 3 === 0 ? ['Noite'] : ['Tarde', 'Noite'],
-      numLikes: Math.floor(Math.random() * 500),
-      signo: signos[i % signos.length],
-      religiao: religioes[i % religioes.length],
-      pets: pets[i % pets.length],
-      idiomas: idiomas[i % idiomas.length],
-      disponibilidade: disponibilidades[i % disponibilidades.length],
-      pcd: pcdValue,
-    };
+// --- Custom Service Functions ---
 
-    if (pcdValue === 'Sim') {
-      profile.pcdTipo = pcdTipos[i % pcdTipos.length];
-    }
+const fetchFullUserProfile = async (userId: string) => {
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+  return data;
+};
 
-    return profile;
+const fetchExploreProfiles = async () => {
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+  if (!user) return { data: [], error: 'Not authenticated' };
+
+  const { data: swipedIdsData, error: swipesError } = await supabaseClient
+    .from('swipes')
+    .select('swiped_id')
+    .eq('swiper_id', user.id);
+
+  if (swipesError) {
+    console.error('Error fetching swipes:', swipesError);
+    return { data: [], error: swipesError };
+  }
+
+  const swipedIds = swipedIdsData.map((s) => s.swiped_id);
+  const idsToExclude = [user.id, ...swipedIds];
+
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .not('id', 'in', `(${idsToExclude.join(',')})`);
+
+  return { data: data?.map(mapProfileFromDb) || [], error };
+};
+
+const fetchPublicProfiles = async (limit: number = 8) => {
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('show_in_public_search', true)
+    .limit(limit);
+  return { data: data?.map(mapProfileFromDb) || [], error };
+};
+
+const updateUserProfileAndPreferences = async (
+  profile: UserProfile,
+  preferences: UserPreferences,
+) => {
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const profileUpdates = mapProfileToDb(profile);
+  const preferenceUpdates = { preferences: preferences };
+
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .update({ ...profileUpdates, ...preferenceUpdates })
+    .eq('id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating profile:', error);
+    return { error };
+  }
+
+  return {
+    updatedProfile: mapProfileFromDb(data),
+    updatedPreferences: data.preferences,
+    error: null,
+  };
+};
+
+const handleSwipe = async (swipedProfileId: string, liked: boolean) => {
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+  if (!user) return { isMatch: false, error: 'Not authenticated' };
+
+  const { error: swipeError } = await supabaseClient
+    .from('swipes')
+    .insert({ swiper_id: user.id, swiped_id: swipedProfileId, liked });
+
+  if (swipeError) {
+    console.error('Error inserting swipe:', swipeError);
+    return { isMatch: false, error: swipeError };
+  }
+
+  if (!liked) {
+    return { isMatch: false, error: null };
+  }
+
+  // Check if the other user liked back
+  const { data: matchCheck, error: matchCheckError } = await supabaseClient
+    .from('swipes')
+    .select('id')
+    .eq('swiper_id', swipedProfileId)
+    .eq('swiped_id', user.id)
+    .eq('liked', true)
+    .single();
+
+  if (matchCheckError || !matchCheck) {
+    return { isMatch: false, error: null }; // No match or an error occurred
+  }
+
+  // It's a match!
+  const { error: matchInsertError } = await supabaseClient
+    .from('matches')
+    .insert({ user1_id: user.id, user2_id: swipedProfileId });
+
+  if (matchInsertError) {
+    console.error('Error creating match:', matchInsertError);
+    return { isMatch: true, error: matchInsertError }; // It's a match, but failed to save
+  }
+
+  return { isMatch: true, error: null };
+};
+
+const fetchMatches = async () => {
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+  if (!user) return { data: [], error: 'Not authenticated' };
+
+  const { data: matches, error } = await supabaseClient
+    .from('matches')
+    .select('*, user1:profiles!matches_user1_id_fkey(*), user2:profiles!matches_user2_id_fkey(*)')
+    .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+  if (error) {
+    console.error('Error fetching matches:', error);
+    return { data: [], error };
+  }
+
+  const profiles = matches.map(match => {
+      const otherUser = match.user1.id === user.id ? match.user2 : match.user1;
+      return mapProfileFromDb(otherUser);
   });
+
+  return { data: profiles, error: null };
 };
 
-const mockProfiles = createMockProfiles(50);
-
-const defaultUserPreferences: UserPreferences = {
-  distanciaMaxima: 100,
-  idadeMinima: 25,
-  idadeMaxima: 35,
-  alturaMinima: 165,
-  alturaMaxima: 190,
-  porteFisicoDesejado: ['Normal', 'Atlético'],
-  fumanteDesejado: ['Não', 'Indiferente'],
-  consumoAlcoolDesejado: ['Socialmente', 'Não bebe', 'Indiferente'],
-  generoDesejado: 'Todos',
-  signoDesejado: [],
-  religiaoDesejada: [],
-  petsDesejado: 'Indiferente',
-  pcdDesejado: 'Indiferente',
-  disponibilidadeDesejada: [],
-  nomeDesejado: '',
-  objetivoDesejado: ['Indiferente'],
-  estadoDesejado: 'Indiferente',
-  cidadeDesejada: 'Indiferente',
-  enableMessageSuggestions: true,
+const fetchMessagesForMatch = async (matchId: number) => {
+    const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .eq('match_id', matchId)
+        .order('created_at', { ascending: true });
+    
+    return { data, error };
 };
 
-const defaultUser: User = {
-  id: 1,
-  email: 'usuario@exemplo.com',
-  profile: {
-    id: 1,
-    name: 'Alex',
-    apelido: 'Alex',
-    age: 28,
-    city: 'São Paulo',
-    state: 'SP',
-    tagline: 'Explorador urbano e amante de livros.',
-    bio: 'Trabalho com design e nas horas vagas gosto de explorar a cidade, encontrar novos restaurantes e ler um bom livro no parque.',
-    interests: ['Design', 'Leitura', 'Gastronomia', 'Viagens'],
-    images: [
-      'https://picsum.photos/seed/my-profile/600/800',
-      'https://picsum.photos/seed/my-profile-2/600/800',
-    ],
-    gender: 'Outro',
-    relationshipGoal: 'Relacionamento sério',
-    compatibility: 100,
-    isPubliclySearchable: true,
-    showLikes: true,
-    distanceFromUser: 0,
-    altura: 178,
-    porteFisico: 'Normal',
-    fumante: 'Não',
-    consumoAlcool: 'Socialmente',
-    interesseEm: 'Todos',
-    diasPreferenciais: ['Fim de semana'],
-    horariosPreferenciais: ['Noite'],
-    numLikes: 258,
-    signo: 'Virgem',
-    religiao: 'Agnóstico(a)',
-    pets: 'Não',
-    idiomas: ['Português', 'Inglês'],
-    disponibilidade: 'Essa semana',
-    pcd: 'Não',
-  },
-  preferences: defaultUserPreferences,
+const sendMessage = async (message: Partial<Message>) => {
+    const { data, error } = await supabaseClient
+        .from('messages')
+        .insert(message)
+        .select()
+        .single();
+    return { data, error };
 };
 
-let currentUser: User | null = null;
-let mockSession: Session | null = null;
-let authStateChangeCallback:
-  | ((event: string, session: Session | null) => void)
-  | null = null;
+const subscribeToMessages = (matchId: number, onNewMessage: (message: Message) => void) => {
+    const channel = supabaseClient
+        .channel(`messages_${matchId}`)
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
+            (payload) => {
+                onNewMessage(payload.new as Message);
+            }
+        )
+        .subscribe();
+    
+    return channel;
+};
 
-// --- END MOCK DATABASE ---
 
-// --- MOCK SERVICE ---
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
+// --- Export the augmented client ---
 export const supabase = {
-  auth: {
-    async signUp({
-      email,
-      password,
-      options,
-    }: {
-      email: string;
-      password?: string;
-      options?: { data?: { [key: string]: any } };
-    }) {
-      await delay(500);
-      const newUserId = Date.now();
-      const newUser: User = {
-        id: newUserId,
-        email: email,
-        profile: {
-          id: newUserId,
-          name: options?.data?.apelido || 'Novo Usuário',
-          apelido: options?.data?.apelido || 'Novo Usuário',
-          age: 25,
-          city: 'Indefinida',
-          state: 'XX',
-          tagline: 'Pronto(a) para novas conexões!',
-          bio: 'Acabei de chegar no Encontro Certo!',
-          interests: ['Conversar', 'Música'],
-          images: [`https://picsum.photos/seed/${newUserId}/600/800`],
-          gender: 'Outro',
-          relationshipGoal: 'Não tenho certeza',
-          compatibility: 100,
-          isPubliclySearchable: true,
-          showLikes: true,
-          distanceFromUser: 0,
-          altura: 170,
-          porteFisico: 'Prefiro não dizer',
-          fumante: 'Prefiro não dizer',
-          consumoAlcool: 'Prefiro não dizer',
-          interesseEm: 'Todos',
-          diasPreferenciais: [],
-          horariosPreferenciais: [],
-          numLikes: 0,
-          signo: 'Indiferente',
-          religiao: 'Indiferente',
-          pets: 'Não',
-          idiomas: ['Português'],
-          disponibilidade: 'Sem pressa',
-          pcd: 'Prefiro não dizer',
-        },
-        preferences: {
-          ...defaultUserPreferences,
-        },
-      };
-
-      // Simulates email verification is now required.
-      return { data: { session: null, user: newUser }, error: null };
-    },
-    async signInWithPassword({ email, password }) {
-      await delay(500);
-      // In a real app, you'd find the user by email/password. Here we just log in the default user.
-      currentUser = defaultUser;
-      mockSession = { user: currentUser };
-      if (authStateChangeCallback) {
-        authStateChangeCallback('SIGNED_IN', mockSession);
-      }
-      return { data: { session: mockSession }, error: null };
-    },
-    async signInForTesting() {
-      await delay(300); // Simulate a quick login
-      currentUser = defaultUser;
-      mockSession = { user: currentUser };
-      if (authStateChangeCallback) {
-        authStateChangeCallback('SIGNED_IN', mockSession);
-      }
-      return { data: { session: mockSession }, error: null };
-    },
-    async signInWithOAuth({ provider }: { provider: 'google' }) {
-      console.log(
-        `Simulating login with provider: ${provider}. In a real app, you would be redirected.`,
-      );
-      await delay(100);
-
-      currentUser = defaultUser;
-      mockSession = { user: currentUser };
-
-      if (authStateChangeCallback) {
-        authStateChangeCallback('SIGNED_IN', mockSession);
-      }
-
-      return { data: { session: mockSession }, error: null };
-    },
-    async signOut() {
-      await delay(200);
-      currentUser = null;
-      mockSession = null;
-      if (authStateChangeCallback) {
-        authStateChangeCallback('SIGNED_OUT', null);
-      }
-    },
-    onAuthStateChange(
-      callback: (event: string, session: Session | null) => void,
-    ): { data: { subscription: any } } {
-      authStateChangeCallback = callback;
-      // Immediately invoke with current state
-      setTimeout(() => callback('INITIAL_SESSION', mockSession), 100);
-
-      return {
-        data: {
-          subscription: {
-            unsubscribe: () => {
-              authStateChangeCallback = null;
-            },
-          },
-        },
-      };
-    },
-  },
-
-  async fetchPublicProfiles(limit: number = 8) {
-    await delay(700);
-    return {
-      data: mockProfiles.filter((p) => p.isPubliclySearchable).slice(0, limit),
-      error: null,
-    };
-  },
-
-  async searchPublicProfiles({
-    name,
-    distance,
-  }: {
-    name?: string;
-    distance?: number;
-  }) {
-    await delay(400);
-    let results = mockProfiles.filter((p) => p.isPubliclySearchable);
-
-    if (name && name.trim() !== '') {
-      const lowerCaseName = name.toLowerCase();
-      results = results.filter(
-        (p) =>
-          p.name.toLowerCase().includes(lowerCaseName) ||
-          p.apelido.toLowerCase().includes(lowerCaseName),
-      );
-    }
-
-    if (distance) {
-      results = results.filter((p) => p.distanceFromUser <= distance);
-    }
-
-    return { data: results, error: null };
-  },
-
-  async fetchExploreProfiles() {
-    await delay(1000);
-    // Return profiles other than the current user
-    return {
-      data: mockProfiles.filter((p) => p.id !== currentUser?.id),
-      error: null,
-    };
-  },
-
+  ...supabaseClient,
+  fetchFullUserProfile,
+  fetchExploreProfiles,
+  fetchPublicProfiles,
+  updateUserProfileAndPreferences,
+  handleSwipe,
+  fetchMatches,
+  fetchMessagesForMatch,
+  sendMessage,
+  subscribeToMessages,
+  // Compatibility explanation still uses Gemini, so we keep it
   async getCompatibilityExplanation(profile: UserProfile): Promise<string> {
-    await delay(300);
+    // This is a mock, but in a real app it would call a service like Gemini
     return `Vocês dois compartilham um interesse em ${
       profile.interests[0]
     } e ambos buscam um ${profile.relationshipGoal.toLowerCase()}. Isso indica uma ótima base para uma conexão!`;
-  },
-
-  async getTopOfWeek() {
-    await delay(600);
-    return {
-      data: [...mockProfiles]
-        .sort((a, b) => b.compatibility - a.compatibility)
-        .slice(0, 5),
-      error: null,
-    };
   },
 };

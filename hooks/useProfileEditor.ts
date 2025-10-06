@@ -22,7 +22,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
 
   useEffect(() => {
     const fetchProfiles = async () => {
-        const { data } = await supabase.fetchExploreProfiles();
+        const { data } = await supabase.fetchPublicProfiles(100); // Fetch a good number for location filtering
         if (data) {
             setAllProfiles(data);
         }
@@ -211,7 +211,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
 
 
   const handleSave = useCallback(async () => {
-    if (isSaving) return;
+    if (isSaving || !user) return;
     setIsSaving(true);
     setBioError('');
 
@@ -225,8 +225,16 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       return;
     }
 
-    updateUser({ ...user, profile, preferences });
-    onSaveSuccess();
+    const { error, updatedProfile, updatedPreferences } = await supabase.updateUserProfileAndPreferences(profile, preferences);
+
+    if (error) {
+        // Handle error, maybe show a toast
+        console.error("Failed to save profile", error);
+    } else if (updatedProfile && updatedPreferences) {
+        updateUser({ ...user, profile: updatedProfile, preferences: updatedPreferences });
+        onSaveSuccess();
+    }
+    
     setIsSaving(false);
   }, [isSaving, profile, preferences, updateUser, user, onSaveSuccess]);
 
