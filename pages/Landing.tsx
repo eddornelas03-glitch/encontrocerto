@@ -9,7 +9,6 @@ import { chunkArray } from '../utils';
 interface LandingProps {
   onNavigateToLogin: () => void;
   onNavigateToRegister: () => void;
-  onNavigateToTest: () => void;
 }
 
 const BackgroundProfileCard: React.FC<{
@@ -52,7 +51,6 @@ const Logo = () => (
 export const Landing: React.FC<LandingProps> = ({
   onNavigateToLogin,
   onNavigateToRegister,
-  onNavigateToTest,
 }) => {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [activePolicy, setActivePolicy] = useState<string | null>(null);
@@ -142,14 +140,6 @@ export const Landing: React.FC<LandingProps> = ({
               className="bg-white/10 backdrop-blur-sm font-bold py-3 px-8 rounded-full text-lg hover:bg-white/20 transition-colors"
             >
               Entrar
-            </button>
-          </div>
-          <div className="mt-6 text-center">
-            <button
-              onClick={onNavigateToTest}
-              className="text-yellow-400 border border-yellow-400/50 font-semibold py-2 px-5 rounded-full hover:bg-yellow-400/10 transition-colors text-sm"
-            >
-              Entrar para Testar (Dev)
             </button>
           </div>
         </header>

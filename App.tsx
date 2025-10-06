@@ -79,10 +79,6 @@ const App: React.FC = () => {
     setNewMatch(null);
   }, [newMatch, navigate]);
 
-  const handleTestLogin = async () => {
-    await supabase.auth.signInForTesting();
-  };
-
   const renderContent = () => {
     if (loading) {
       return <LoadingFallback />;
@@ -114,7 +110,6 @@ const App: React.FC = () => {
             <Landing
               onNavigateToLogin={() => setAuthView('login')}
               onNavigateToRegister={() => setAuthView('register')}
-              onNavigateToTest={handleTestLogin}
             />
           );
       }
