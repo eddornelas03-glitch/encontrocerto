@@ -5,7 +5,7 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import { supabase } from '../services/supabaseService';
+import { supabase, mapProfileFromDb } from '../services/supabaseService';
 import type { Session, User, UserProfile, UserPreferences } from '../types';
 
 // Default preferences for new or incomplete profiles
@@ -30,42 +30,6 @@ const defaultUserPreferences: UserPreferences = {
   cidadeDesejada: 'Indiferente',
   enableMessageSuggestions: true,
 };
-
-// Maps a row from the Supabase 'profiles' table to the app's UserProfile type
-const mapProfileFromDb = (dbProfile: any): UserProfile => ({
-  id: dbProfile.id,
-  name: dbProfile.nickname,
-  apelido: dbProfile.nickname,
-  age: dbProfile.age || 18,
-  bio: dbProfile.bio || '',
-  city: dbProfile.city || 'Não informado',
-  state: dbProfile.state || 'XX',
-  interests: dbProfile.interests || [],
-  images: dbProfile.photos && dbProfile.photos.length > 0 ? dbProfile.photos : ['https://picsum.photos/seed/placeholder/600/800'],
-  relationshipGoal: dbProfile.relationshipgoal || 'Não tenho certeza',
-  altura: dbProfile.height || 170,
-  porteFisico: dbProfile.body_type || 'Prefiro não dizer',
-  fumante: dbProfile.smokes || 'Prefiro não dizer',
-  consumoAlcool: dbProfile.drinks || 'Prefiro não dizer',
-  interesseEm: dbProfile.interested_in || 'Todos',
-  signo: dbProfile.zodiac_sign || 'Indiferente',
-  religiao: dbProfile.religion || 'Indiferente',
-  pets: dbProfile.pets || 'Não',
-  idiomas: dbProfile.languages || ['Português'],
-  pcd: dbProfile.disability || 'Prefiro não dizer',
-  pcdTipo: dbProfile.disability_type,
-  showLikes: dbProfile.showlikes ?? true,
-  isPubliclySearchable: dbProfile.show_in_public_search ?? true,
-  tagline: '',
-  compatibility: 0,
-  distanceFromUser: 0,
-  diasPreferenciais: [],
-  horariosPreferenciais: [],
-  numLikes: 0,
-  disponibilidade: 'Sem pressa',
-  gender: dbProfile.gender || 'Outro',
-});
-
 
 interface AuthContextType {
   session: Session | null;

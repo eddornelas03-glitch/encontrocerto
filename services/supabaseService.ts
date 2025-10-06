@@ -1,5 +1,5 @@
 import { supabase as supabaseClient } from '@/src/integrations/supabase/client';
-import type { UserProfile, UserPreferences, Message } from './types';
+import type { UserProfile, UserPreferences, Message } from '../types';
 
 // --- Profile Data Mapping ---
 // Maps the app's UserProfile object to the Supabase 'profiles' table columns
@@ -29,31 +29,30 @@ const mapProfileToDb = (profile: UserProfile) => ({
 });
 
 // Maps a row from the Supabase 'profiles' table to the app's UserProfile type
-const mapProfileFromDb = (dbProfile: any): UserProfile => ({
+export const mapProfileFromDb = (dbProfile: any): UserProfile => ({
   id: dbProfile.id,
-  name: dbProfile.nickname, // Using nickname as name
+  name: dbProfile.nickname,
   apelido: dbProfile.nickname,
-  age: dbProfile.age,
-  bio: dbProfile.bio,
-  city: dbProfile.city,
-  state: dbProfile.state,
+  age: dbProfile.age || 18,
+  bio: dbProfile.bio || '',
+  city: dbProfile.city || 'Não informado',
+  state: dbProfile.state || 'XX',
   interests: dbProfile.interests || [],
-  images: dbProfile.photos || ['https://picsum.photos/seed/placeholder/600/800'],
-  relationshipGoal: dbProfile.relationshipgoal,
-  altura: dbProfile.height,
-  porteFisico: dbProfile.body_type,
-  fumante: dbProfile.smokes,
-  consumoAlcool: dbProfile.drinks,
-  interesseEm: dbProfile.interested_in,
-  signo: dbProfile.zodiac_sign,
-  religiao: dbProfile.religion,
-  pets: dbProfile.pets,
-  idiomas: dbProfile.languages || [],
-  pcd: dbProfile.disability,
+  images: dbProfile.photos && dbProfile.photos.length > 0 ? dbProfile.photos : ['https://picsum.photos/seed/placeholder/600/800'],
+  relationshipGoal: dbProfile.relationshipgoal || 'Não tenho certeza',
+  altura: dbProfile.height || 170,
+  porteFisico: dbProfile.body_type || 'Prefiro não dizer',
+  fumante: dbProfile.smokes || 'Prefiro não dizer',
+  consumoAlcool: dbProfile.drinks || 'Prefiro não dizer',
+  interesseEm: dbProfile.interested_in || 'Todos',
+  signo: dbProfile.zodiac_sign || 'Indiferente',
+  religiao: dbProfile.religion || 'Indiferente',
+  pets: dbProfile.pets || 'Não',
+  idiomas: dbProfile.languages || ['Português'],
+  pcd: dbProfile.disability || 'Prefiro não dizer',
   pcdTipo: dbProfile.disability_type,
-  showLikes: dbProfile.showlikes,
-  isPubliclySearchable: dbProfile.show_in_public_search,
-  // These fields are calculated client-side
+  showLikes: dbProfile.showlikes ?? true,
+  isPubliclySearchable: dbProfile.show_in_public_search ?? true,
   tagline: '',
   compatibility: 0,
   distanceFromUser: 0,
@@ -98,10 +97,12 @@ const fetchExploreProfiles = async () => {
   const swipedIds = swipedIdsData.map((s) => s.swiped_id);
   const idsToExclude = [user.id, ...swipedIds];
 
+  const formattedIds = idsToExclude.map(id => `"${id}"`).join(',');
+
   const { data, error } = await supabaseClient
     .from('profiles')
     .select('*')
-    .not('id', 'in', `(${idsToExclude.join(',')})`);
+    .not('id', 'in', `(${formattedIds})`);
 
   return { data: data?.map(mapProfileFromDb) || [], error };
 };
