@@ -30,7 +30,6 @@ export const Register: React.FC<RegisterProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [gender, setGender] = useState<'Homem' | 'Mulher' | 'Outro'>('Homem');
   const [interestedIn, setInterestedIn] = useState<'Homens' | 'Mulheres' | 'Todos'>('Mulheres');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,7 +45,6 @@ export const Register: React.FC<RegisterProps> = ({
       options: {
         data: {
           apelido: name,
-          gender: gender,
           interested_in: interestedIn,
         },
       },
@@ -132,23 +130,13 @@ export const Register: React.FC<RegisterProps> = ({
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label htmlFor="gender" className="block text-gray-400 text-sm font-bold mb-2">Eu sou</label>
-              <select id="gender" value={gender} onChange={(e) => setGender(e.target.value as any)} className="w-full px-4 py-3 bg-gray-700 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-white">
-                <option>Homem</option>
-                <option>Mulher</option>
-                <option>Outro</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="interestedIn" className="block text-gray-400 text-sm font-bold mb-2">Interesse em</label>
-              <select id="interestedIn" value={interestedIn} onChange={(e) => setInterestedIn(e.target.value as any)} className="w-full px-4 py-3 bg-gray-700 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-white">
-                <option>Mulheres</option>
-                <option>Homens</option>
-                <option>Todos</option>
-              </select>
-            </div>
+          <div className="mb-4">
+            <label htmlFor="interestedIn" className="block text-gray-400 text-sm font-bold mb-2">Tenho interesse em</label>
+            <select id="interestedIn" value={interestedIn} onChange={(e) => setInterestedIn(e.target.value as any)} className="w-full px-4 py-3 bg-gray-700 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-white">
+              <option>Mulheres</option>
+              <option>Homens</option>
+              <option>Todos</option>
+            </select>
           </div>
           <div className="mb-4">
             <label
