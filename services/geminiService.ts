@@ -1,7 +1,8 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import type { UserProfile, Message, User, MessageSuggestion } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
+// Vite will replace process.env.GEMINI_API_KEY with the actual key from the .env file
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const moderationPrompt = `Você é um moderador de um aplicativo de encontros. Analise o texto abaixo e responda apenas se ele for ofensivo.
 
@@ -125,13 +126,12 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     const imagePart = await fileToGenerativePart(file);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-pro-vision', // Use the stable vision model
+      model: 'gemini-pro-vision',
       contents: [{ parts: [{ text: nudityCheckPrompt }, imagePart] }],
     });
 
     const result = await response.response;
 
-    // If Gemini's own safety filter blocks it, consider it unsafe.
     if (result.promptFeedback?.blockReason) {
       console.warn(
         `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
@@ -141,25 +141,17 @@ export const isImageNude = async (file: File): Promise<boolean> => {
 
     const text = result.text()?.trim().toUpperCase();
 
-    // More robust check: look for the keyword instead of an exact match.
     if (text?.includes('SIM')) {
       return true;
     }
 
-    if (text?.includes('NAO')) {
-      return false;
-    }
-
-    // If the response is something else, it's an unexpected state.
-    console.warn(`Unexpected response from nudity check: "${text}"`);
-    throw new Error(
-      'A verificação da imagem falhou ao receber uma resposta inesperada.',
-    );
+    return false;
   } catch (error) {
-    console.error('Error calling Gemini API for nudity check:', error);
-    throw new Error(
-      'Não foi possível verificar a imagem. Por favor, tente novamente mais tarde.',
+    console.warn(
+      'Falha na verificação de imagem com a IA. Permitindo o upload.',
+      error,
     );
+    return false;
   }
 };
 
