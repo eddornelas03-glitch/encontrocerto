@@ -186,30 +186,43 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setProfile(prev => ({
-                ...prev,
-                images: [...prev.images, reader.result as string]
-            }));
-        };
-        reader.readAsDataURL(file);
+        const { data, error } = await supabase.uploadProfileImage(file);
+
+        if (error || !data) {
+            console.error("Image upload failed", error);
+            setImageError("Ocorreu um erro ao enviar a imagem. Tente novamente.");
+            return;
+        }
+
+        setProfile(prev => ({
+            ...prev,
+            images: [...prev.images, data.publicUrl]
+        }));
 
     } catch (error) {
-        console.error("Image analysis failed", error);
-        setImageError("Ocorreu um erro ao analisar a imagem. Tente novamente.");
+        console.error("Image processing failed", error);
+        setImageError("Ocorreu um erro ao processar a imagem. Tente novamente.");
     } finally {
         setIsAnalyzingImage(false);
         e.target.value = '';
     }
   }, [profile.images.length]);
 
-  const handleRemoveImage = useCallback((indexToRemove: number) => {
+  const handleRemoveImage = useCallback(async (indexToRemove: number) => {
+      const imageUrl = profile.images[indexToRemove];
+      
       setProfile(prev => ({
           ...prev,
           images: prev.images.filter((_, index) => index !== indexToRemove)
       }));
-  }, []);
+
+      try {
+          await supabase.deleteProfileImage(imageUrl);
+      } catch (error) {
+          console.error("Failed to delete image from storage:", error);
+          showToast('Erro ao remover a foto do armazenamento.', 'error');
+      }
+  }, [profile.images, showToast]);
 
 
   const handleSave = useCallback(async () => {

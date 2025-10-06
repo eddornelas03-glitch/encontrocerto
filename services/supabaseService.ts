@@ -248,6 +248,52 @@ const subscribeToMessages = (matchId: number, onNewMessage: (message: Message) =
     return channel;
 };
 
+const uploadProfileImage = async (file: File) => {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return { data: null, error: 'Not authenticated' };
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabaseClient
+        .storage
+        .from('profile-photos')
+        .upload(fileName, file);
+
+    if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        return { data: null, error: uploadError };
+    }
+
+    const { data } = supabaseClient
+        .storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+    return { data: { publicUrl: data.publicUrl }, error: null };
+};
+
+const deleteProfileImage = async (imageUrl: string) => {
+    const urlParts = imageUrl.split('/');
+    const filePath = urlParts.slice(urlParts.indexOf('profile-photos') + 1).join('/');
+
+    if (!filePath) {
+        console.error('Could not extract file path from URL:', imageUrl);
+        return { error: 'Invalid image URL' };
+    }
+
+    const { data, error } = await supabaseClient
+        .storage
+        .from('profile-photos')
+        .remove([filePath]);
+
+    if (error) {
+        console.error('Error deleting image:', error);
+    }
+
+    return { data, error };
+};
+
 
 // --- Export the augmented client ---
 export const supabase = {
@@ -261,6 +307,8 @@ export const supabase = {
   fetchMessagesForMatch,
   sendMessage,
   subscribeToMessages,
+  uploadProfileImage,
+  deleteProfileImage,
   // Compatibility explanation still uses Gemini, so we keep it
   async getCompatibilityExplanation(profile: UserProfile): Promise<string> {
     // This is a mock, but in a real app it would call a service like Gemini
