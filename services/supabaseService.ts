@@ -38,7 +38,7 @@ export const mapProfileFromDb = (dbProfile: any): UserProfile => ({
   city: dbProfile.city || 'Não informado',
   state: dbProfile.state || 'XX',
   interests: dbProfile.interests || [],
-  images: dbProfile.photos && dbProfile.photos.length > 0 ? dbProfile.photos : ['https://picsum.photos/seed/placeholder/600/800'],
+  images: dbProfile.photos || [],
   relationshipGoal: dbProfile.relationshipgoal || 'Não tenho certeza',
   altura: dbProfile.height || 170,
   porteFisico: dbProfile.body_type || 'Prefiro não dizer',
@@ -97,12 +97,10 @@ const fetchExploreProfiles = async () => {
   const swipedIds = swipedIdsData.map((s) => s.swiped_id);
   const idsToExclude = [user.id, ...swipedIds];
 
-  const formattedIds = idsToExclude.map(id => `"${id}"`).join(',');
-
   const { data, error } = await supabaseClient
     .from('profiles')
     .select('*')
-    .not('id', 'in', `(${formattedIds})`);
+    .not('id', 'in', `(${idsToExclude.join(',')})`);
 
   return { data: data?.map(mapProfileFromDb) || [], error };
 };
