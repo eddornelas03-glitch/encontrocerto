@@ -51,7 +51,11 @@ export const Register: React.FC<RegisterProps> = ({
     });
     setLoading(false);
     if (error) {
-      setError('Falha no cadastro. Tente outro e-mail.');
+      if (error.message.toLowerCase().includes('user already registered')) {
+        setError('Este e-mail já está cadastrado. Tente fazer o login.');
+      } else {
+        setError('Falha no cadastro. Tente outro e-mail.');
+      }
     } else {
       setEmailSent(true);
     }
