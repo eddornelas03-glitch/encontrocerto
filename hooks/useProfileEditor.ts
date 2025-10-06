@@ -201,7 +201,11 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
 
     } catch (error) {
         console.error("Image processing failed", error);
-        setImageError("Ocorreu um erro ao processar a imagem. Tente novamente.");
+        if (error instanceof Error) {
+            setImageError(error.message);
+        } else {
+            setImageError("Ocorreu um erro ao processar a imagem. Tente novamente.");
+        }
     } finally {
         setIsAnalyzingImage(false);
         e.target.value = '';
