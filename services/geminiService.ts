@@ -130,26 +130,32 @@ export const isImageNude = async (file: File): Promise<boolean> => {
 
     const result = await response.response;
 
-    // Check if the prompt was blocked due to safety settings
+    // If Gemini's own safety filter blocks it, consider it unsafe.
     if (result.promptFeedback?.blockReason) {
-      console.log(`Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`);
+      console.warn(`Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`);
       return true;
     }
     
-    const text = result.text();
+    const text = result.text()?.trim().toUpperCase();
 
-    if (!text || text.trim() === '') {
-      console.warn('Gemini response for nudity check was empty. Assuming not nude as it was not blocked.');
+    if (text === 'SIM') {
+      return true;
+    }
+    
+    if (text === 'NAO') {
       return false;
     }
 
-    const resultText = text.trim().toUpperCase();
-    return resultText === 'SIM';
+    // If the response is something else, it's an unexpected state.
+    // It's safer to throw an error and let the caller decide how to handle it.
+    console.warn(`Unexpected response from nudity check: "${text}"`);
+    throw new Error('A verificação da imagem falhou ao receber uma resposta inesperada.');
+
   } catch (error) {
     console.error('Error calling Gemini API for nudity check:', error);
-    // If a true error occurs (network, etc.), fail OPEN by assuming the image is safe.
-    // This prevents blocking all uploads if the API is down.
-    return false;
+    // Re-throw the error to be handled by the calling function.
+    // This is better than failing open (return false) or failing closed (return true).
+    throw new Error('Não foi possível verificar a imagem. Por favor, tente novamente mais tarde.');
   }
 };
 
