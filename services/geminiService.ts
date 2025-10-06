@@ -138,11 +138,12 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     
     const text = result.text()?.trim().toUpperCase();
 
-    if (text === 'SIM') {
+    // More robust check: look for the keyword instead of an exact match.
+    if (text?.includes('SIM')) {
       return true;
     }
     
-    if (text === 'NAO') {
+    if (text?.includes('NAO')) {
       return false;
     }
 
