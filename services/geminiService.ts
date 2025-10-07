@@ -150,21 +150,20 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error('Erro ao chamar Google Vision API:', errorBody);
-      return false;
+      return true; // FAIL-CLOSED: Bloqueia se a API falhar.
     }
 
     const result = await response.json();
     const safeSearch = result.responses?.[0]?.safeSearchAnnotation;
 
     if (!safeSearch) {
-      console.warn('Nenhuma anotação de SafeSearch encontrada. Assumindo que a imagem é segura.');
-      return false;
+      console.warn('Nenhuma anotação de SafeSearch encontrada. Bloqueando por segurança.');
+      return true; // FAIL-CLOSED: Bloqueia se a resposta for inesperada.
     }
 
     const { adult, racy, violence } = safeSearch;
     console.log("Google Cloud Vision SafeSearch:", { adult, racy, violence });
 
-    // Política de Rigidez Máxima: Bloqueia qualquer imagem que não seja explicitamente classificada como "muito improvável" de ser imprópria.
     const isUnsafe =
       adult !== 'VERY_UNLIKELY' ||
       racy !== 'VERY_UNLIKELY' ||
@@ -177,11 +176,11 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     return isUnsafe;
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      console.error('Erro na moderação de imagem: Timeout de 15 segundos excedido.');
+      console.error('Erro na moderação de imagem: Timeout. Bloqueando por segurança.');
     } else {
-      console.error('Erro na moderação de imagem:', error);
+      console.error('Erro na moderação de imagem. Bloqueando por segurança:', error);
     }
-    return false;
+    return true; // FAIL-CLOSED: Bloqueia em qualquer erro.
   } finally {
     clearTimeout(timeout);
   }
