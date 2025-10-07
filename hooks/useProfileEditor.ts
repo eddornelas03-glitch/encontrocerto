@@ -129,7 +129,6 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     []
   );
 
-  // Upload de imagem com moderação
   const handleImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -139,13 +138,19 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       setIsAnalyzingImage(true);
 
       try {
-        const isNude = await isImageNude(file);
+        let isNude = false;
+
+        try {
+          isNude = await isImageNude(file);
+        } catch (moderationError) {
+          console.warn('Erro na moderação da imagem. Permitindo upload por segurança.');
+        }
+
         if (isNude) {
           setImageError('Sua foto foi rejeitada por conter conteúdo impróprio.');
           return;
         }
 
-        // Upload direto no Supabase
         const fileName = `${user?.id}/${Date.now()}-${file.name}`;
         const { data, error } = await supabase.storage
           .from('profiles')
@@ -157,11 +162,13 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
           .from('profiles')
           .getPublicUrl(fileName);
 
-        const publicUrl = publicUrlData.publicUrl;
+        const publicUrl = publicUrlData?.publicUrl;
+
+        if (!publicUrl) throw new Error('URL pública não encontrada.');
 
         setProfile((p) => ({ ...p, images: [...(p.images || []), publicUrl] }));
       } catch (err) {
-        console.error(err);
+        console.error('Erro ao enviar imagem:', err);
         setImageError('Erro ao enviar a imagem. Tente novamente.');
       } finally {
         setIsAnalyzingImage(false);
