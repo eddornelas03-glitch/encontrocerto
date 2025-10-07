@@ -164,12 +164,15 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     const { adult, racy, violence } = safeSearch;
     console.log("Google Cloud Vision SafeSearch:", { adult, racy, violence });
 
-    // Política de Tolerância Zero: Bloqueia qualquer imagem que tenha a mínima chance de ser imprópria.
-    const unsafeLevels = ['UNLIKELY', 'POSSIBLE', 'LIKELY', 'VERY_LIKELY'];
-    const isUnsafe =
-      unsafeLevels.includes(adult) ||
-      unsafeLevels.includes(racy) ||
-      unsafeLevels.includes(violence);
+    // Política de Tolerância Zero Absoluta.
+    // A imagem é considerada SEGURA somente se TODAS as categorias forem 'VERY_UNLIKELY' ou 'UNKNOWN'.
+    // Qualquer outra classificação (UNLIKELY, POSSIBLE, etc.) resultará em bloqueio.
+    const isSafe =
+      (adult === 'VERY_UNLIKELY' || adult === 'UNKNOWN') &&
+      (racy === 'VERY_UNLIKELY' || racy === 'UNKNOWN') &&
+      (violence === 'VERY_UNLIKELY' || violence === 'UNKNOWN');
+
+    const isUnsafe = !isSafe;
 
     if (isUnsafe) {
       console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}, Violence: ${violence}`);
