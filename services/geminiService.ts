@@ -118,11 +118,15 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     process.env.GEMINI_API_URL ||
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
   try {
     const imageBase64 = await fileToBase64(file);
 
     const response = await fetch(apiUrl, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -142,53 +146,52 @@ export const isImageNude = async (file: File): Promise<boolean> => {
       }),
     });
 
+    clearTimeout(timeout);
+
     if (!response.ok) {
       if (import.meta.env.DEV) {
         console.error('Erro ao chamar Gemini API:', await response.text());
       }
-      return false; // is not nude (safe fallback)
+      return false; // Not unsafe (safe fallback)
     }
 
     const result = await response.json();
     const text =
       result?.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || '';
 
-    // Also check for safety ratings block
+    if (!text) {
+      if (import.meta.env.DEV) {
+        console.warn('Descrição vazia retornada pela IA. Considerando como segura.');
+      }
+      return false; // Not unsafe (safe fallback)
+    }
+
     if (result?.promptFeedback?.blockReason) {
       console.warn(
         `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
       );
-      return true; // is nude
+      return true; // is unsafe
     }
 
     const sensitiveWords = [
-      'nude',
-      'naked',
-      'explicit',
-      'sexual',
-      'genital',
-      'boobs',
-      'breast',
-      'penis',
-      'vagina',
-      'porn',
-      'adult',
-      'unsafe',
-      'nudez',
-      'explícito',
-      'sexual',
-      'nu',
-      'nua',
-      'erótico',
+      'nude', 'naked', 'explicit', 'sexual', 'genital', 'boobs', 'breast',
+      'penis', 'vagina', 'porn', 'adult', 'unsafe', 'nudez', 'explícito',
+      'sexual', 'nu', 'nua', 'erótico',
     ];
     const isUnsafe = sensitiveWords.some((word) => text.includes(word));
 
-    return isUnsafe; // returns true if unsafe, false if safe
-  } catch (error) {
+    return isUnsafe;
+  } catch (error: any) {
     if (import.meta.env.DEV) {
-      console.error('Erro na moderação de imagem:', error);
+      if (error.name === 'AbortError') {
+        console.error('Erro na moderação de imagem: Timeout de 15 segundos excedido.');
+      } else {
+        console.error('Erro na moderação de imagem:', error);
+      }
     }
-    return false; // is not nude (safe fallback)
+    return false; // Not unsafe (safe fallback)
+  } finally {
+    clearTimeout(timeout);
   }
 };
 

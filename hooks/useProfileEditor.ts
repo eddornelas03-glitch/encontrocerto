@@ -193,22 +193,19 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         }
     };
 
-    try {
-        const isUnsafe = await isImageNude(file);
-        if (isUnsafe) {
-            setImageError('Imagem bloqueada: conteúdo impróprio detectado.');
-        } else {
-            await uploadFile();
-        }
-    } catch (error) {
-        // This catch block handles technical failures from isImageNude.
-        // As requested, we log the error and proceed with the upload.
-        console.warn("A verificação da imagem falhou, mas o upload será permitido:", error);
+    // isImageNude will now always resolve and won't throw on technical errors.
+    const isUnsafe = await isImageNude(file);
+
+    if (isUnsafe) {
+        setImageError('Imagem bloqueada: conteúdo impróprio detectado.');
+    } else {
+        // This will run if the image is safe OR if the moderation check failed.
         await uploadFile();
-    } finally {
-        setIsAnalyzingImage(false);
-        e.target.value = '';
     }
+    
+    // This will always be called, stopping the spinner.
+    setIsAnalyzingImage(false);
+    e.target.value = '';
   }, [profile.images.length]);
 
   const handleRemoveImage = useCallback(async (indexToRemove: number) => {
