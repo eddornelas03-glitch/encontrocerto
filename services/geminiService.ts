@@ -23,19 +23,13 @@ Texto do usuário:
 [TEXTO]
 """`;
 
-const fileToGenerativePart = async (file: File) => {
-  const base64EncodedDataPromise = new Promise<string>((resolve) => {
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () =>
-      resolve((reader.result as string).split(',')[1]);
     reader.readAsDataURL(file);
+    reader.onload = () => resolve((reader.result as string).split(',')[1]);
+    reader.onerror = (error) => reject(error);
   });
-  return {
-    inlineData: {
-      data: await base64EncodedDataPromise,
-      mimeType: file.type,
-    },
-  };
 };
 
 const formatProfileForPrompt = (profile: UserProfile) => {
@@ -120,61 +114,57 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 };
 
 export const isImageNude = async (file: File): Promise<boolean> => {
-  try {
-    const imagePart = await fileToGenerativePart(file);
-    // A simple prompt is enough to trigger the safety classifiers.
-    const simplePrompt = "Analyze this image for safety on a dating profile.";
+  // Use a URL padrão se a variável de ambiente não estiver definida
+  const apiUrl =
+    process.env.GEMINI_API_URL ||
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-pro-vision',
-      contents: [{ parts: [{ text: simplePrompt }, imagePart] }],
+  try {
+    const imageBase64 = await fileToBase64(file);
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: "Esta imagem é para um perfil de aplicativo de namoro. A imagem contém nudez, conteúdo sexualmente explícito ou é excessivamente sugestiva? Responda apenas com 'unsafe' se for imprópria, ou 'safe' se for apropriada.",
+              },
+              {
+                inlineData: { mimeType: file.type, data: imageBase64 },
+              },
+            ],
+          },
+        ],
+      }),
     });
 
-    const result = await response.response;
-    const feedback = result.promptFeedback;
-
-    // Check 1: Was the response blocked outright for safety reasons?
-    if (feedback?.blockReason === 'SAFETY') {
-      console.warn(
-        `Image blocked by Gemini. Reason: ${feedback.blockReason}.`,
-        feedback.safetyRatings
-      );
-      return true;
-    }
-
-    // Check 2: Even if not blocked, inspect the detailed safety ratings.
-    const safetyRatings = feedback?.safetyRatings;
-    if (safetyRatings) {
-      const explicitRating = safetyRatings.find(
-        (r) => r.category === HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT
-      );
-      // Block if probability is MEDIUM or HIGH.
-      if (explicitRating && ['MEDIUM', 'HIGH'].includes(explicitRating.probability)) {
-        console.warn(
-          `Image flagged for sexually explicit content. Probability: ${explicitRating.probability}`
-        );
-        return true;
+    if (!response.ok) {
+      // Em ambiente de desenvolvimento, logue o erro da API
+      if (import.meta.env.DEV) {
+        console.error('Erro ao chamar Gemini API:', await response.text());
       }
+      // Não bloqueia o upload se a API falhar
+      return false;
     }
 
-    // If all checks pass, the image is considered safe.
-    return false;
+    const result = await response.json();
+    const text =
+      result?.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || '';
+
+    // Retorna true (é nudez/impróprio) se a resposta for 'unsafe'
+    return text.includes('unsafe');
   } catch (error) {
-    // This catch block handles network errors, API timeouts, and also
-    // errors thrown by the API for severe violations before a response is formed.
-    const errorMessage = (error as Error).message || '';
-    if (errorMessage.includes('SAFETY')) {
-        console.warn('Image blocked by API safety filter before response generation.', error);
-        return true; // It's a safety block, so return true.
+    // Em ambiente de desenvolvimento, logue o erro
+    if (import.meta.env.DEV) {
+      console.error('Erro na moderação de imagem:', error);
     }
-
-    // For any other error, it's a technical failure.
-    console.warn(
-      'A verificação de imagem falhou tecnicamente. Permitindo o upload como fallback.',
-      error
-    );
-    // Re-throw to let the caller handle the fallback (which is to allow the upload).
-    throw error;
+    // Não bloqueia o upload se ocorrer um erro técnico
+    return false;
   }
 };
 
