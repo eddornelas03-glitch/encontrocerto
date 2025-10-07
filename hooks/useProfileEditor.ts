@@ -8,7 +8,6 @@ import { BRAZILIAN_STATES, BRAZILIAN_CITIES } from '../data/brazilianLocations';
 export const useProfileEditor = (onSaveSuccess: () => void) => {
   const { user, updateUser } = useAuth();
 
-  // Fallback to a default structure if user is somehow null to prevent crashes
   const initialProfile = user?.profile || ({} as UserProfile);
   const initialPrefs = user?.preferences || ({} as UserPreferences);
 
@@ -19,22 +18,18 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
-  // Location data logic
-  const availableStates = useMemo(() => {
-    return BRAZILIAN_STATES.sort((a, b) => a.nome.localeCompare(b.nome));
-  }, []);
+  const availableStates = useMemo(
+    () => BRAZILIAN_STATES.sort((a, b) => a.nome.localeCompare(b.nome)),
+    []
+  );
 
   const availableCities = useMemo(() => {
-    if (
-      preferences.estadoDesejado &&
-      preferences.estadoDesejado !== 'Indiferente'
-    ) {
+    if (preferences.estadoDesejado && preferences.estadoDesejado !== 'Indiferente') {
       return BRAZILIAN_CITIES[preferences.estadoDesejado]?.sort() || [];
     }
     return [];
   }, [preferences.estadoDesejado]);
 
-  // Handlers for profile changes
   const handleProfileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -46,21 +41,19 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       if (name === 'bio') {
         isTextOffensive(value).then((isOffensive) => {
           setBioError(
-            isOffensive
-              ? 'Sua bio contém linguagem que viola nossas diretrizes.'
-              : null,
+            isOffensive ? 'Sua bio contém linguagem que viola nossas diretrizes.' : null
           );
         });
       }
     },
-    [],
+    []
   );
 
   const handleCheckboxChange = useCallback(
     (name: keyof UserProfile, checked: boolean) => {
       setProfile((p) => ({ ...p, [name]: checked }));
     },
-    [],
+    []
   );
 
   const handleInterestToggle = useCallback((interest: string) => {
@@ -72,7 +65,6 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     });
   }, []);
 
-  // Handlers for preferences changes
   const handlePreferenceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value, type } = e.target;
@@ -95,7 +87,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       setPreferences((p) => {
         const newPrefs = { ...p, [name]: parsedValue };
         if (name === 'estadoDesejado' && value !== 'Indiferente') {
-          newPrefs.distanciaMaxima = 500; // Reset distance if state is selected
+          newPrefs.distanciaMaxima = 500;
           newPrefs.cidadeDesejada = 'Indiferente';
         }
         if (name === 'distanciaMaxima') {
@@ -105,7 +97,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         return newPrefs;
       });
     },
-    [],
+    []
   );
 
   const handleMultiSelectPreferenceChange = useCallback(
@@ -115,17 +107,13 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         let newValues: string[];
 
         if (value === 'Indiferente') {
-          newValues = currentValues.includes('Indiferente')
-            ? []
-            : ['Indiferente'];
+          newValues = currentValues.includes('Indiferente') ? [] : ['Indiferente'];
         } else {
           const valuesWithoutIndiferente = currentValues.filter(
-            (item) => item !== 'Indiferente',
+            (item) => item !== 'Indiferente'
           );
           if (valuesWithoutIndiferente.includes(value)) {
-            newValues = valuesWithoutIndiferente.filter(
-              (item) => item !== value,
-            );
+            newValues = valuesWithoutIndiferente.filter((item) => item !== value);
           } else {
             newValues = [...valuesWithoutIndiferente, value];
           }
@@ -138,10 +126,10 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         return { ...prev, [field]: newValues };
       });
     },
-    [],
+    []
   );
 
-  // Image handlers
+  // Upload de imagem com moderação
   const handleImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -157,21 +145,30 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
           return;
         }
 
-        const { data, error } = await supabase.uploadProfileImage(file);
-        if (error || !data) {
-          throw error || new Error('Falha no upload da imagem.');
-        }
+        // Upload direto no Supabase
+        const fileName = `${user?.id}/${Date.now()}-${file.name}`;
+        const { data, error } = await supabase.storage
+          .from('profiles')
+          .upload(fileName, file);
 
-        setProfile((p) => ({ ...p, images: [...p.images, data.publicUrl] }));
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('profiles')
+          .getPublicUrl(fileName);
+
+        const publicUrl = publicUrlData.publicUrl;
+
+        setProfile((p) => ({ ...p, images: [...(p.images || []), publicUrl] }));
       } catch (err) {
         console.error(err);
-        setImageError('Ocorreu um erro ao enviar a imagem.');
+        setImageError('Erro ao enviar a imagem. Tente novamente.');
       } finally {
         setIsAnalyzingImage(false);
-        e.target.value = ''; // Reset file input
+        e.target.value = '';
       }
     },
-    [],
+    [user]
   );
 
   const handleRemoveImage = useCallback(
@@ -179,41 +176,39 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
       const imageUrl = profile.images[index];
       if (!imageUrl) return;
 
-      // Optimistically update UI
+      const path = imageUrl.split('/').slice(-1)[0];
       const originalImages = profile.images;
       const newImages = profile.images.filter((_, i) => i !== index);
       setProfile((p) => ({ ...p, images: newImages }));
 
-      // Call Supabase to delete from storage
-      const { error } = await supabase.deleteProfileImage(imageUrl);
+      const { error } = await supabase.storage.from('profiles').remove([path]);
       if (error) {
-        // Revert UI if deletion fails
         setProfile((p) => ({ ...p, images: originalImages }));
         setImageError('Não foi possível remover a imagem. Tente novamente.');
       }
     },
-    [profile.images],
+    [profile.images]
   );
 
-  // Save handler
   const handleSave = useCallback(async () => {
     if (!user || bioError) return;
-
     setIsSaving(true);
-    const {
-      updatedProfile,
-      updatedPreferences,
-      error,
-    } = await supabase.updateUserProfileAndPreferences(profile, preferences);
 
-    if (error) {
-      console.error('Failed to save profile:', error);
-      // Here you might want to show a toast to the user
-    } else if (updatedProfile && updatedPreferences) {
-      updateUser({ ...user, profile: updatedProfile, preferences: updatedPreferences });
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ profile, preferences })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      updateUser({ ...user, profile, preferences });
       onSaveSuccess();
+    } catch (err) {
+      console.error('Erro ao salvar perfil:', err);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }, [user, profile, preferences, bioError, updateUser, onSaveSuccess]);
 
   return {
