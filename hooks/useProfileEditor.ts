@@ -194,9 +194,9 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     };
 
     try {
-        const isNude = await isImageNude(file);
-        if (isNude) {
-            setImageError('Imagem não permitida. Escolha uma foto apropriada.');
+        const isUnsafe = await isImageNude(file);
+        if (isUnsafe) {
+            setImageError('Imagem bloqueada: conteúdo impróprio detectado.');
         } else {
             await uploadFile();
         }

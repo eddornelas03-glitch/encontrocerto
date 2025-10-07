@@ -114,7 +114,6 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 };
 
 export const isImageNude = async (file: File): Promise<boolean> => {
-  // Use a URL padrão se a variável de ambiente não estiver definida
   const apiUrl =
     process.env.GEMINI_API_URL ||
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`;
@@ -132,7 +131,7 @@ export const isImageNude = async (file: File): Promise<boolean> => {
           {
             parts: [
               {
-                text: "Esta imagem é para um perfil de aplicativo de namoro. A imagem contém nudez, conteúdo sexualmente explícito ou é excessivamente sugestiva? Responda apenas com 'unsafe' se for imprópria, ou 'safe' se for apropriada.",
+                text: 'Analise se esta imagem contém nudez, conteúdo sexual, erótico ou explícito. Descreva brevemente o que há na imagem, sem censura, para avaliação.',
               },
               {
                 inlineData: { mimeType: file.type, data: imageBase64 },
@@ -144,27 +143,52 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     });
 
     if (!response.ok) {
-      // Em ambiente de desenvolvimento, logue o erro da API
       if (import.meta.env.DEV) {
         console.error('Erro ao chamar Gemini API:', await response.text());
       }
-      // Não bloqueia o upload se a API falhar
-      return false;
+      return false; // is not nude (safe fallback)
     }
 
     const result = await response.json();
     const text =
       result?.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || '';
 
-    // Retorna true (é nudez/impróprio) se a resposta for 'unsafe'
-    return text.includes('unsafe');
+    // Also check for safety ratings block
+    if (result?.promptFeedback?.blockReason) {
+      console.warn(
+        `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
+      );
+      return true; // is nude
+    }
+
+    const sensitiveWords = [
+      'nude',
+      'naked',
+      'explicit',
+      'sexual',
+      'genital',
+      'boobs',
+      'breast',
+      'penis',
+      'vagina',
+      'porn',
+      'adult',
+      'unsafe',
+      'nudez',
+      'explícito',
+      'sexual',
+      'nu',
+      'nua',
+      'erótico',
+    ];
+    const isUnsafe = sensitiveWords.some((word) => text.includes(word));
+
+    return isUnsafe; // returns true if unsafe, false if safe
   } catch (error) {
-    // Em ambiente de desenvolvimento, logue o erro
     if (import.meta.env.DEV) {
       console.error('Erro na moderação de imagem:', error);
     }
-    // Não bloqueia o upload se ocorrer um erro técnico
-    return false;
+    return false; // is not nude (safe fallback)
   }
 };
 
