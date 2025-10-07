@@ -193,17 +193,14 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         }
     };
 
-    // isImageNude will now always resolve and won't throw on technical errors.
     const isUnsafe = await isImageNude(file);
 
     if (isUnsafe) {
-        setImageError('Sua foto viola nossas diretrizes (conteúdo impróprio detectado).');
+        setImageError('Sua foto foi rejeitada por conter conteúdo impróprio.');
     } else {
-        // This will run if the image is safe OR if the moderation check failed.
         await uploadFile();
     }
     
-    // This will always be called, stopping the spinner.
     setIsAnalyzingImage(false);
     e.target.value = '';
   }, [profile.images.length]);

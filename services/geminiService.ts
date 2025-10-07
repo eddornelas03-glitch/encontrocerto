@@ -115,11 +115,10 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 
 export const isImageNude = async (file: File): Promise<boolean> => {
   const apiUrl =
-    process.env.GEMINI_API_URL ||
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const imageBase64 = await fileToBase64(file);
@@ -134,12 +133,8 @@ export const isImageNude = async (file: File): Promise<boolean> => {
         contents: [
           {
             parts: [
-              {
-                text: 'Analise se esta imagem contém nudez, conteúdo sexual, erótico ou explícito. Descreva brevemente o que há na imagem, sem censura, para avaliação.',
-              },
-              {
-                inlineData: { mimeType: file.type, data: imageBase64 },
-              },
+              { text: 'Analyze this image for safety.' },
+              { inlineData: { mimeType: file.type, data: imageBase64 } },
             ],
           },
         ],
@@ -149,47 +144,44 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      if (import.meta.env.DEV) {
-        console.error('Erro ao chamar Gemini API:', await response.text());
-      }
-      return false; // Not unsafe (safe fallback)
+      console.error('Erro ao chamar Gemini API:', await response.text());
+      return false; // Fallback seguro
     }
 
     const result = await response.json();
-    const text =
-      result?.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || '';
-
-    if (!text) {
-      if (import.meta.env.DEV) {
-        console.warn('Descrição vazia retornada pela IA. Considerando como segura.');
-      }
-      return false; // Not unsafe (safe fallback)
-    }
+    console.log("Gemini SafeSearch Result:", result);
 
     if (result?.promptFeedback?.blockReason) {
-      console.warn(
-        `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
-      );
-      return true; // is unsafe
+      console.warn(`Imagem bloqueada pelo filtro do Gemini: ${result.promptFeedback.blockReason}`);
+      return true;
     }
 
-    const sensitiveWords = [
-      'nude', 'naked', 'explicit', 'sexual', 'genital', 'boobs', 'breast',
-      'penis', 'vagina', 'porn', 'adult', 'unsafe', 'nudez', 'explícito',
-      'sexual', 'nu', 'nua', 'erótico',
-    ];
-    const isUnsafe = sensitiveWords.some((word) => text.includes(word));
+    const safetyRatings = result?.candidates?.[0]?.safetyRatings;
+    if (!safetyRatings) {
+      console.warn('Nenhuma classificação de segurança encontrada. Assumindo que a imagem é segura.');
+      return false;
+    }
 
-    return isUnsafe;
-  } catch (error: any) {
-    if (import.meta.env.DEV) {
-      if (error.name === 'AbortError') {
-        console.error('Erro na moderação de imagem: Timeout de 15 segundos excedido.');
-      } else {
-        console.error('Erro na moderação de imagem:', error);
+    const explicitRating = safetyRatings.find(
+      (r: any) => r.category === 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+    );
+
+    if (explicitRating) {
+      const { probability } = explicitRating;
+      if (probability === 'MEDIUM' || probability === 'HIGH') {
+        console.log(`Imagem sinalizada como imprópria. Categoria: SEXUALLY_EXPLICIT, Probabilidade: ${probability}`);
+        return true;
       }
     }
-    return false; // Not unsafe (safe fallback)
+
+    return false;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Erro na moderação de imagem: Timeout de 15 segundos excedido.');
+    } else {
+      console.error('Erro na moderação de imagem:', error);
+    }
+    return false; // Fallback seguro
   } finally {
     clearTimeout(timeout);
   }
