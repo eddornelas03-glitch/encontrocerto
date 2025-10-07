@@ -114,8 +114,10 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 };
 
 export const isImageNude = async (file: File): Promise<boolean> => {
-  const apiUrl =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  // Usando a API do Google Cloud Vision para uma detecção mais precisa, como solicitado.
+  // A chave de API configurada no projeto (GEMINI_API_KEY) será usada.
+  const apiKey = process.env.GEMINI_API_KEY;
+  const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -130,11 +132,15 @@ export const isImageNude = async (file: File): Promise<boolean> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
+        requests: [
           {
-            parts: [
-              { text: 'Analyze this image for safety.' },
-              { inlineData: { mimeType: file.type, data: imageBase64 } },
+            image: {
+              content: imageBase64,
+            },
+            features: [
+              {
+                type: 'SAFE_SEARCH_DETECTION',
+              },
             ],
           },
         ],
@@ -144,44 +150,42 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      console.error('Erro ao chamar Gemini API:', await response.text());
-      return false; // Fallback seguro
-    }
-
-    const result = await response.json();
-    console.log("Gemini SafeSearch Result:", result);
-
-    if (result?.promptFeedback?.blockReason) {
-      console.warn(`Imagem bloqueada pelo filtro do Gemini: ${result.promptFeedback.blockReason}`);
-      return true;
-    }
-
-    const safetyRatings = result?.candidates?.[0]?.safetyRatings;
-    if (!safetyRatings) {
-      console.warn('Nenhuma classificação de segurança encontrada. Assumindo que a imagem é segura.');
+      const errorBody = await response.text();
+      console.error('Erro ao chamar Google Vision API:', errorBody);
+      // Não bloqueia o usuário por uma falha na API.
       return false;
     }
 
-    const explicitRating = safetyRatings.find(
-      (r: any) => r.category === 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
-    );
+    const result = await response.json();
+    const safeSearch = result.responses?.[0]?.safeSearchAnnotation;
 
-    if (explicitRating) {
-      const { probability } = explicitRating;
-      if (probability === 'MEDIUM' || probability === 'HIGH') {
-        console.log(`Imagem sinalizada como imprópria. Categoria: SEXUALLY_EXPLICIT, Probabilidade: ${probability}`);
-        return true;
-      }
+    if (!safeSearch) {
+      console.warn('Nenhuma anotação de SafeSearch encontrada. Assumindo que a imagem é segura.');
+      return false;
     }
 
-    return false;
+    const { adult, racy } = safeSearch;
+    console.log("Google Cloud Vision SafeSearch:", { adult, racy });
+
+    const isUnsafe =
+      adult === 'LIKELY' ||
+      adult === 'VERY_LIKELY' ||
+      racy === 'LIKELY' ||
+      racy === 'VERY_LIKELY';
+
+    if (isUnsafe) {
+      console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}`);
+    }
+
+    return isUnsafe;
   } catch (error: any) {
     if (error.name === 'AbortError') {
       console.error('Erro na moderação de imagem: Timeout de 15 segundos excedido.');
     } else {
       console.error('Erro na moderação de imagem:', error);
     }
-    return false; // Fallback seguro
+    // Não bloqueia o usuário por erros técnicos.
+    return false;
   } finally {
     clearTimeout(timeout);
   }
