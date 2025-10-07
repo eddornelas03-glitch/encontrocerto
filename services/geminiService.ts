@@ -161,15 +161,18 @@ export const isImageNude = async (file: File): Promise<boolean> => {
       return false;
     }
 
-    const { adult, racy } = safeSearch;
-    console.log("Google Cloud Vision SafeSearch:", { adult, racy });
+    const { adult, racy, violence } = safeSearch;
+    console.log("Google Cloud Vision SafeSearch:", { adult, racy, violence });
 
-    // Regra de moderação mais rigorosa
-    const unsafeLevels = ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'];
-    const isUnsafe = unsafeLevels.includes(adult) || unsafeLevels.includes(racy);
+    // Política de Tolerância Zero: Bloqueia qualquer imagem que tenha a mínima chance de ser imprópria.
+    const unsafeLevels = ['UNLIKELY', 'POSSIBLE', 'LIKELY', 'VERY_LIKELY'];
+    const isUnsafe =
+      unsafeLevels.includes(adult) ||
+      unsafeLevels.includes(racy) ||
+      unsafeLevels.includes(violence);
 
     if (isUnsafe) {
-      console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}`);
+      console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}, Violence: ${violence}`);
     }
 
     return isUnsafe;
