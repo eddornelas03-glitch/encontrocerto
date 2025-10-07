@@ -197,7 +197,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     const isUnsafe = await isImageNude(file);
 
     if (isUnsafe) {
-        setImageError('Imagem bloqueada: conteúdo impróprio detectado.');
+        setImageError('Sua foto viola nossas diretrizes (conteúdo impróprio detectado).');
     } else {
         // This will run if the image is safe OR if the moderation check failed.
         await uploadFile();
