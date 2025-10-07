@@ -1,273 +1,89 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
-import type { UserProfile, UserPreferences } from '../types';
-import { isTextOffensive, isImageNude } from '../services/geminiService';
-import { supabase } from '../services/supabaseService';
-import { BRAZILIAN_STATES } from '../data/brazilianLocations';
-import { useToast } from '../context/ToastContext';
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
-export const useProfileEditor = (onSaveSuccess: () => void) => {
-  const { user, updateUser } = useAuth();
-  const { showToast } = useToast();
+// 🔹 Substitua pela sua API de moderação (Gemini, OpenAI, etc.)
+const GEMINI_API_KEY = "SUA_CHAVE_DE_API_AQUI"; 
 
-  if (!user) {
-    throw new Error('useProfileEditor must be used within an authenticated context');
-  }
-
-  const [profile, setProfile] = useState<UserProfile>(user.profile);
-  const [preferences, setPreferences] = useState<UserPreferences>(user.preferences);
-  const [isSaving, setIsSaving] = useState(false);
-  const [bioError, setBioError] = useState('');
-  const [imageError, setImageError] = useState('');
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
-  const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-
-  useEffect(() => {
-    const fetchProfiles = async () => {
-        const { data } = await supabase.fetchPublicProfiles(100); // Fetch a good number for location filtering
-        if (data) {
-            setAllProfiles(data);
-        }
-    };
-    fetchProfiles();
-  }, []);
-
-  const availableStates = useMemo(() => {
-    if (!allProfiles) return [];
-    const statesWithUsers = [...new Set(allProfiles.map(p => p.state))];
-    return BRAZILIAN_STATES
-      .filter(state => statesWithUsers.includes(state.uf))
-      .sort((a, b) => a.nome.localeCompare(b.nome));
-  }, [allProfiles]);
-
-  const availableCities = useMemo(() => {
-      if (preferences.estadoDesejado && preferences.estadoDesejado !== 'Indiferente') {
-          return [...new Set(allProfiles
-              .filter(p => p.state === preferences.estadoDesejado)
-              .map(p => p.city)
-          )].sort();
-      }
-      return [];
-  }, [allProfiles, preferences.estadoDesejado]);
-
-  const handleProfileChange = useCallback(
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-      >,
-    ) => {
-      const { name, value, type } = e.target;
-
-      if (name === 'pcd') {
-        if (value !== 'Sim') {
-          setProfile((prev) => ({
-            ...prev,
-            pcd: value as UserProfile['pcd'],
-            pcdTipo: undefined,
-          }));
-        } else {
-          setProfile((prev) => ({
-            ...prev,
-            pcd: 'Sim',
-            pcdTipo: prev.pcdTipo || 'Física', // Set default if user selects 'Sim'
-          }));
-        }
-        return;
-      }
-
-      const isNumber =
-        type === 'number' ||
-        ['age', 'altura', 'numLikes'].includes(name);
-
-      setProfile((prev) => ({
-        ...prev,
-        [name]: isNumber ? Number(value) : value,
-      }));
-    },
-    [],
-  );
-
-  const handleCheckboxChange = useCallback((name: keyof UserProfile, checked: boolean) => {
-    setProfile(p => ({ ...p, [name]: checked }));
-  }, []);
-
-  const handleInterestToggle = useCallback((interest: string) => {
-    setProfile((prev) => {
-      const interests = prev.interests.includes(interest)
-        ? prev.interests.filter((i) => i !== interest)
-        : [...prev.interests, interest];
-      return { ...prev, interests };
+async function verificarImagemPorNudez(file: File): Promise<boolean> {
+  try {
+    // Converte a imagem para base64
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
-  }, []);
 
-  const handlePreferenceChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value, type } = e.target;
-
-      // Handle special cases with cascading updates first
-      if (name === 'estadoDesejado') {
-        setPreferences((prev) => ({
-          ...prev,
-          estadoDesejado: value,
-          cidadeDesejada: 'Indiferente', // Reset city when state changes
-        }));
-        return;
-      }
-
-      if (name === 'distanciaMaxima') {
-        setPreferences((prev) => ({
-          ...prev,
-          distanciaMaxima: Number(value),
-          estadoDesejado: 'Indiferente', // Reset location if distance is used
-          cidadeDesejada: 'Indiferente',
-        }));
-        return;
-      }
-
-      // Handle generic case for all other fields
-      const isNumber =
-        type === 'number' || ['idadeMinima', 'idadeMaxima', 'alturaMinima', 'alturaMaxima'].includes(name);
-      const isCheckbox = type === 'checkbox';
-      const parsedValue = isCheckbox
-        ? (e.target as HTMLInputElement).checked
-        : isNumber
-        ? Number(value)
-        : value;
-
-      setPreferences((prev) => ({
-        ...prev,
-        [name]: parsedValue,
-      }));
-    },
-    [],
-  );
-
-  const handleMultiSelectPreferenceChange = useCallback(
-    (field: keyof UserPreferences, value: string) => {
-      setPreferences((prev) => {
-        const currentValues = (prev[field] as string[]) || [];
-        let newValues: string[];
-
-        if (value === 'Indiferente') {
-          newValues = currentValues.includes('Indiferente') ? [] : ['Indiferente'];
-        } else {
-          const valuesWithoutIndiferente = currentValues.filter(
-            (item) => item !== 'Indiferente',
-          );
-          if (valuesWithoutIndiferente.includes(value)) {
-            newValues = valuesWithoutIndiferente.filter((item) => item !== value);
-          } else {
-            newValues = [...valuesWithoutIndiferente, value];
+    // Faz a chamada à API Gemini para moderação
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=" + GEMINI_API_KEY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: "Esta imagem contém nudez, conteúdo sexual ou explícito? Responda apenas com SIM ou NÃO." },
+              { inline_data: { mime_type: file.type, data: base64.split(",")[1] } }
+            ]
           }
-        }
+        ]
+      })
+    });
 
-        if (newValues.length === 0) {
-          newValues = ['Indiferente'];
-        }
-        return { ...prev, [field]: newValues };
-      });
-    },
-    [],
-  );
-  
-  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || profile.images.length >= 10) {
-        e.target.value = '';
-        return;
-    }
+    const data = await response.json();
+    const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text?.toLowerCase() || "";
 
-    setIsAnalyzingImage(true);
-    setImageError('');
-    
-    const uploadFile = async () => {
-        const { data, error } = await supabase.uploadProfileImage(file);
-        if (error || !data) {
-            console.error("Image upload failed", error);
-            setImageError("Ocorreu um erro ao enviar a imagem. Tente novamente.");
-        } else {
-            setProfile(prev => ({
-                ...prev,
-                images: [...prev.images, data.publicUrl]
-            }));
-        }
-    };
+    // Se a resposta contém “sim”, bloqueia o upload
+    return !(texto.includes("sim"));
+  } catch (error) {
+    console.error("Erro ao verificar nudez:", error);
+    return false;
+  }
+}
 
-    const isUnsafe = await isImageNude(file);
+export function useProfileEditor(userId: string | null) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-    if (isUnsafe) {
-        setImageError('Sua foto foi rejeitada por conter conteúdo impróprio.');
-    } else {
-        await uploadFile();
-    }
-    
-    setIsAnalyzingImage(false);
-    e.target.value = '';
-  }, [profile.images.length]);
-
-  const handleRemoveImage = useCallback(async (indexToRemove: number) => {
-      const imageUrl = profile.images[indexToRemove];
-      
-      setProfile(prev => ({
-          ...prev,
-          images: prev.images.filter((_, index) => index !== indexToRemove)
-      }));
-
-      try {
-          await supabase.deleteProfileImage(imageUrl);
-      } catch (error) {
-          console.error("Failed to delete image from storage:", error);
-          showToast('Erro ao remover a foto do armazenamento.', 'error');
-      }
-  }, [profile.images, showToast]);
-
-
-  const handleSave = useCallback(async () => {
-    if (isSaving || !user) return;
-    setIsSaving(true);
-    setBioError('');
-
-    const isBioOffensive = await isTextOffensive(profile.bio);
-
-    if (isBioOffensive) {
-      setBioError(
-        'Sua bio viola as diretrizes da comunidade. Por favor, revise o texto.',
-      );
-      showToast('Sua bio contém texto ofensivo.', 'error');
-      setIsSaving(false);
+  const handleImageUpload = async (file: File) => {
+    if (!userId) {
+      setError("Usuário não autenticado.");
       return;
     }
 
-    const { error, updatedProfile, updatedPreferences } = await supabase.updateUserProfileAndPreferences(profile, preferences);
+    setLoading(true);
+    setError(null);
 
-    if (error) {
-        console.error("Failed to save profile", error);
-        showToast('Erro ao salvar o perfil. Tente novamente.', 'error');
-    } else if (updatedProfile && updatedPreferences) {
-        updateUser({ ...user, profile: updatedProfile, preferences: updatedPreferences });
-        showToast('Perfil salvo com sucesso!', 'success');
-        onSaveSuccess();
+    try {
+      // 🔹 Etapa 1: Verificar se contém nudez
+      const permitido = await verificarImagemPorNudez(file);
+      if (!permitido) {
+        setError("❌ Imagem bloqueada: conteúdo impróprio detectado.");
+        setLoading(false);
+        return;
+      }
+
+      // 🔹 Etapa 2: Upload para o Supabase
+      const fileName = `${userId}_${Date.now()}.jpg`;
+      const { data, error: uploadError } = await supabase.storage
+        .from("profiles")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("profiles")
+        .getPublicUrl(fileName);
+
+      setImageUrl(urlData.publicUrl);
+    } catch (err: any) {
+      console.error("Erro no upload:", err);
+      setError("Erro ao enviar imagem.");
+    } finally {
+      setLoading(false);
     }
-    
-    setIsSaving(false);
-  }, [isSaving, profile, preferences, updateUser, user, onSaveSuccess, showToast]);
-
-  return {
-    profile,
-    preferences,
-    isSaving,
-    bioError,
-    imageError,
-    isAnalyzingImage,
-    availableStates,
-    availableCities,
-    handleProfileChange,
-    handleCheckboxChange,
-    handleInterestToggle,
-    handlePreferenceChange,
-    handleMultiSelectPreferenceChange,
-    handleImageUpload,
-    handleRemoveImage,
-    handleSave,
   };
-};
+
+  return { handleImageUpload, loading, error, imageUrl };
+}
