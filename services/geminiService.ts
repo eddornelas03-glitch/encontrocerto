@@ -164,10 +164,13 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     const { adult, racy, violence } = safeSearch;
     console.log("Google Cloud Vision SafeSearch:", { adult, racy, violence });
 
+    // Adjusted logic for better balance:
+    // - Stricter on 'adult' and 'violence'.
+    // - More lenient on 'racy' to allow for things like swimwear.
     const isUnsafe =
-      adult !== 'VERY_UNLIKELY' ||
-      racy !== 'VERY_UNLIKELY' ||
-      violence !== 'VERY_UNLIKELY';
+      ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'].includes(adult) ||
+      ['LIKELY', 'VERY_LIKELY'].includes(racy) ||
+      ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'].includes(violence);
 
     if (isUnsafe) {
       console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}, Violence: ${violence}`);
