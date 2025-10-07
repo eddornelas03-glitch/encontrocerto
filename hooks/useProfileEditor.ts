@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 // 🔹 Substitua pela sua API de moderação (Gemini, OpenAI, etc.)
-const GEMINI_API_KEY = "SUA_CHAVE_DE_API_AQUI"; 
+const GEMINI_API_KEY = "AIzaSyAP8eHdIzTuiAPT2V8tak3314g7lKNTX6c"; 
 
 async function verificarImagemPorNudez(file: File): Promise<boolean> {
   try {
