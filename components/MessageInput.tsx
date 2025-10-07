@@ -170,7 +170,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     try {
         const isNude = await isImageNude(file);
         if (isNude) {
-            setError('Conteúdo impróprio detectado. Esta foto não pode ser enviada.');
+            setError('Sua foto foi rejeitada por conter conteúdo impróprio.');
             return;
         }
 

@@ -114,8 +114,6 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 };
 
 export const isImageNude = async (file: File): Promise<boolean> => {
-  // Usando a API do Google Cloud Vision para uma detecção mais precisa, como solicitado.
-  // A chave de API configurada no projeto (GEMINI_API_KEY) será usada.
   const apiKey = process.env.GEMINI_API_KEY;
   const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
@@ -152,7 +150,6 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error('Erro ao chamar Google Vision API:', errorBody);
-      // Não bloqueia o usuário por uma falha na API.
       return false;
     }
 
@@ -167,11 +164,9 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     const { adult, racy } = safeSearch;
     console.log("Google Cloud Vision SafeSearch:", { adult, racy });
 
-    const isUnsafe =
-      adult === 'LIKELY' ||
-      adult === 'VERY_LIKELY' ||
-      racy === 'LIKELY' ||
-      racy === 'VERY_LIKELY';
+    // Regra de moderação mais rigorosa
+    const unsafeLevels = ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'];
+    const isUnsafe = unsafeLevels.includes(adult) || unsafeLevels.includes(racy);
 
     if (isUnsafe) {
       console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}`);
@@ -184,7 +179,6 @@ export const isImageNude = async (file: File): Promise<boolean> => {
     } else {
       console.error('Erro na moderação de imagem:', error);
     }
-    // Não bloqueia o usuário por erros técnicos.
     return false;
   } finally {
     clearTimeout(timeout);
