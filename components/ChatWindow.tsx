@@ -16,7 +16,7 @@ interface ChatWindowProps {
   onSendSystemMessage: (text: string) => void;
   onRequestAnalysis: () => void;
   onViewProfile: (profile: UserProfile) => void;
-  onUnmatch: (matchId: number) => void;
+  onUnmatch: (matchId: string) => void;
 }
 
 const MoreIcon = () => (
@@ -56,8 +56,8 @@ const FlagIcon = () => (
     fill="currentColor"
     className="w-5 h-5"
   >
-    <path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0V14h5.75a.75.75 0 010 1.5H3.5v2.75a.75.75 0 001.5 0V17h5.75a.75.75 0 010 1.5H5v2.75a.75.75 0 001.5 0V20h5.75a.75.75 0 010 1.5H6.5v2.75a.75.75 0 001.5 0V18h5.75a.75.75 0 010 1.5H8V12h1.5V9.25H3.5V2.75z" />
-    <path d="M13.5 2.75a2.5 2.5 0 00-2.5 2.5v7.5a2.5 2.5 0 002.5 2.5h2.5a.75.75 0 000-1.5h-2.5a1 1 0 01-1-1V5.25a1 1 0 011-1h2.5a.75.75 0 000-1.5h-2.5z" />
+    <path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0V15h6.5a.75.75 0 000-1.5H3.5V2.75z" />
+    <path d="M18 8.75a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0v-5.5zM12.5 5.25a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z" />
   </svg>
 );
 
@@ -152,7 +152,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
     };
 
     fetchSuggestions();
-  }, [match, currentUser, messages]);
+  }, [match, currentUser, messages, currentUser.preferences.enableMessageSuggestions]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -201,7 +201,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
 
   return (
     <>
-      <div className="h-full w-full bg-gray-700 flex flex-col">
+      <div className="h-full w-full bg-gray-800 flex flex-col">
         <header className="bg-gray-900 p-3 border-b border-gray-700 flex items-center justify-between shadow-md z-10 shrink-0">
           <div className="flex items-center">
             <button
@@ -230,7 +230,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
               aria-label={`Ver perfil de ${match.name}`}
             >
               <img
-                src={match.images[0]}
+                src={match.images?.[0] || 'https://via.placeholder.com/150x150.png?text=Sem+Foto'}
                 alt={`Foto de perfil de ${match.name}`}
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -263,7 +263,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
               >
                 <path
                   fillRule="evenodd"
-                  d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 2.25a.75.75 0 01.75.75v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3-3H3.75a3 3 0 01-3-3V7.5a3 3 0 013-3h.75V3.75A.75.75 0 016.75 2.25zM6 15.75a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H6zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75v-.008zM9.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H9.75zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H10.5a.75.75 0 01-.75-.75v-.008zM12.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75h-.008zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008zM15.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75h-.008zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008z"
+                  d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 2.25a.75.75 0 01.75.75v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H3.75a3 3 0 01-3-3V7.5a3 3 0 013-3h.75V3.75A.75.75 0 016.75 2.25zM6 15.75a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H6zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75v-.008zM9.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H9.75zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H10.5a.75.75 0 01-.75-.75v-.008zM12.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75h-.008zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008zM15.75 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75h-.008zm.75 2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008z"
                   clipRule="evenodd"
                 />
               </svg>
@@ -324,7 +324,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
           </div>
         </header>
 
-        <main className="flex-grow overflow-y-auto p-4 space-y-4">
+        <main className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar">
           {messages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -398,7 +398,7 @@ const ChatWindowComponent: React.FC<ChatWindowProps> = ({
           message={`Você não verá mais o perfil de ${match.name} e essa pessoa não poderá ver o seu. Vocês serão removidos dos matches um do outro.`}
           confirmText="Sim, Bloquear"
           cancelText="Cancelar"
-          onConfirm={handleUnmatchConfirm}
+          onConfirm={handleUnmatchConfirm} // Same action for now
           onCancel={() => setShowConfirmation(null)}
         />
       )}

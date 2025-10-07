@@ -198,7 +198,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           </button>
         </header>
 
-        <main className="overflow-y-auto p-6 space-y-6">
+        <main className="overflow-y-auto p-6 space-y-6 no-scrollbar">
           <div>
             <Label htmlFor="nomeDesejado">Buscar por nome</Label>
             <Input

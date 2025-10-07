@@ -90,6 +90,7 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
     isSaving,
     bioError,
     imageError,
+    validationErrors,
     isAnalyzingImage,
     availableStates,
     availableCities,
@@ -121,7 +122,7 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
         </button>
       </header>
 
-      <main className="overflow-y-auto p-6 pb-24">
+      <main className="overflow-y-auto p-6 pb-24 no-scrollbar">
         <FormSection title="Fotos">
           <div className="grid grid-cols-3 gap-3">
             {profile.images.map((img, i) => (
@@ -210,13 +211,14 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
 
         <FormSection title="Sobre Mim">
           <div>
-            <Label htmlFor="apelido">Apelido</Label>
+            <Label htmlFor="name">Apelido</Label>
             <Input
-              id="apelido"
-              name="apelido"
-              value={profile.apelido}
+              id="name"
+              name="name"
+              value={profile.name}
               onChange={handleProfileChange}
             />
+             {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
           </div>
           <div>
             <Label htmlFor="bio">Bio</Label>
@@ -237,18 +239,31 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="gender">Eu sou</Label>
+             <div>
+              <Label htmlFor="age">Idade</Label>
+              <Input
+                type="number"
+                id="age"
+                name="age"
+                value={profile.age || ''}
+                onChange={handleProfileChange}
+              />
+              {validationErrors.age && <p className="text-red-500 text-xs mt-1">{validationErrors.age}</p>}
+            </div>
+             <div>
+              <Label htmlFor="gender">Gênero</Label>
               <Select
                 id="gender"
                 name="gender"
-                value={profile.gender}
+                value={profile.gender || ''}
                 onChange={handleProfileChange}
               >
+                <option value="" disabled>Selecione...</option>
                 <option>Homem</option>
                 <option>Mulher</option>
                 <option>Outro</option>
               </Select>
+               {validationErrors.gender && <p className="text-red-500 text-xs mt-1">{validationErrors.gender}</p>}
             </div>
             <div>
               <Label htmlFor="altura">Altura (cm)</Label>
@@ -256,7 +271,7 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
                 type="number"
                 id="altura"
                 name="altura"
-                value={profile.altura}
+                value={profile.altura || ''}
                 onChange={handleProfileChange}
               />
             </div>
@@ -308,7 +323,7 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
                 value={profile.signo}
                 onChange={handleProfileChange}
               >
-                {SIGNOS.map((s) => (
+                {SIGNOS.filter(s => s !== 'Indiferente').map((s) => (
                   <option key={s}>{s}</option>
                 ))}
               </Select>
@@ -321,7 +336,7 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
                 value={profile.religiao}
                 onChange={handleProfileChange}
               >
-                {RELIGIOES.map((r) => (
+                 {RELIGIOES.filter(r => r !== 'Indiferente').map((r) => (
                   <option key={r}>{r}</option>
                 ))}
               </Select>
@@ -357,13 +372,15 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
               <Select
                 id="interesseEm"
                 name="interesseEm"
-                value={profile.interesseEm}
+                value={profile.interesseEm || ''}
                 onChange={handleProfileChange}
               >
+                 <option value="" disabled>Selecione...</option>
                 <option>Homens</option>
                 <option>Mulheres</option>
                 <option>Todos</option>
               </Select>
+              {validationErrors.interesseEm && <p className="text-red-500 text-xs mt-1">{validationErrors.interesseEm}</p>}
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-700/50">
@@ -682,3 +699,5 @@ export const EditProfile: React.FC<EditProfileProps> = () => {
     </div>
   );
 };
+
+export default EditProfile;

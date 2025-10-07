@@ -65,20 +65,6 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
       }
-      /* Added for Toast */
-      @keyframes fade-in-down {
-        from {
-          opacity: 0;
-          transform: translate(-50%, -20px);
-        }
-        to {
-          opacity: 1;
-          transform: translate(-50%, 0);
-        }
-      }
-      .animate-fade-in-down {
-        animation: fade-in-down 0.5s ease-out forwards;
-      }
     </style>
 <script type="importmap">
 {
@@ -88,22 +74,27 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.22.0",
     "react-router": "https://aistudiocdn.com/react-router@^6.25.1",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.25.1"
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.25.1",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.44.4"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
     <script>
-      // Polyfill to make process.env.API_KEY available for the Gemini SDK.
-      // IMPORTANT: This is for demonstration purposes only. In a real production
-      // app, API keys must be handled on a secure backend server and not
-      // exposed on the client-side.
+      // Polyfill para disponibilizar process.env para os SDKs.
+      // IMPORTANTE: Em um aplicativo de produção real, estas chaves devem ser
+      // gerenciadas de forma segura. Para este projeto, você DEVE substituir
+      // estes valores pelos da sua conta.
       window.process = {
         env: {
-          API_KEY: "AIzaSyDuxjnW7kORn4cf0HR01804rYIq6YPBVbQ"
+          // Substitua pela sua Chave de API do Gemini
+          API_KEY: "AIzaSyCf9JT42lkML0XooSw0wR0wKW0nTNLbFOw",
+          // Substitua pela URL do seu projeto Supabase
+          SUPABASE_URL: "https://biyrvpqneglyfqcuclvc.supabase.co",
+          // Substitua pela Chave Anônima (pública) do seu projeto Supabase
+          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpeXJ2cHFuZWdseWZxY3VjbHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MDA5NzYsImV4cCI6MjA3NTI3Njk3Nn0.KEyIRxF8LfbQknF35WZiy6ZnK8rakYMdhP75D075j2c"
         }
       };
     </script>

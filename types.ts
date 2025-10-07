@@ -32,9 +32,8 @@ export interface UserPreferences {
 }
 
 export interface UserProfile {
-  id: string; // Changed to string for Supabase UUID
+  id: string;
   name: string;
-  apelido: string;
   age: number;
   city: string;
   state: string;
@@ -70,24 +69,25 @@ export interface UserProfile {
   disponibilidade: 'Hoje' | 'Essa semana' | 'Online por enquanto' | 'Sem pressa';
   pcd: 'Sim' | 'Não' | 'Prefiro não dizer';
   pcdTipo?: 'Física' | 'Mental' | 'Ambas' | 'Prefiro não dizer';
+  preferences: UserPreferences; // Preferences are stored within the profile table
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Message {
   id: number;
-  senderId: string | 'system'; // Changed to string for Supabase UUID
+  senderId: string | 'system';
   text?: string;
   audioUrl?: string;
   imageUrl?: string;
   timestamp: string;
   type?: 'user' | 'system' | 'ai_analysis';
-  match_id?: number;
-  receiver_id?: string;
 }
 
 export interface Meeting {
   id: number;
-  proposerId: string; // Changed to string
-  proposedToId: string; // Changed to string
+  proposerId: string;
+  proposedToId: string;
   suggestedDate: string;
   suggestedTime: string;
   location?: string;
@@ -95,7 +95,7 @@ export interface Meeting {
 }
 
 export interface User {
-  id: string; // Changed to string for Supabase UUID
+  id: string;
   email: string;
   profile: UserProfile;
   preferences: UserPreferences;

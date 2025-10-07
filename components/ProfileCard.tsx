@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import type { UserProfile, UserPreferences } from '../types';
-import { DefaultAvatar } from './DefaultAvatar';
 
 interface ProfileCardProps {
   profile: UserProfile;
@@ -47,7 +46,7 @@ const HeartIcon = () => (
     fill="currentColor"
     className="w-5 h-5"
   >
-    <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.345 22.345 0 01-2.846-2.434c-.26-.323-.51-.653-.747-.991l-.255-.373a.85.85 0 01-.042-.105A3.01 3.01 0 012 10c0-1.657 1.343-3 3-3a3.01 3.01 0 012.25 1.007A3.01 3.01 0 0112.25 8 3 3 0 0115 11c0 .599-.155 1.164-.43 1.66l-.255.373a.85.85 0 01-.042-.105c-.237.338-.487.668-.747.991a22.345 22.345 0 01-2.846 2.434 22.045 22.045 0 01-2.582 1.9 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.002z" />
+    <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.345 22.345 0 01-2.846-2.434c-.26-.323-.51-.653-.747-.991l-.255-.373a.85.85 0 01-.042-.105A3.01 3.01 0 012 10c0-1.657 1.343-3 3-3a3.01 3.01 0 012.25 1.007A3.01 3.01 0 0112.25 8 3 3 0 0115 11c0 .599-.155 1.164-.43 1.66l-.255-.373a.85.85 0 01-.042-.105c-.237.338-.487.668-.747.991a22.345 22.345 0 01-2.846 2.434 22.045 22.045 0 01-2.582 1.9 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.002z" />
   </svg>
 );
 
@@ -150,14 +149,14 @@ const CheckmarkIcon = () => (
 const DetailItem: React.FC<{
   label: string;
   value: React.ReactNode;
-  isMatch: boolean;
+  isMatch?: boolean;
 }> = ({ label, value, isMatch }) => (
   <div>
     <h2 className="text-red-400 font-bold flex items-center gap-1">
       {label}
       {isMatch && <CheckmarkIcon />}
     </h2>
-    <p className="mt-1 text-gray-200">{value}</p>
+    <p className="mt-1 text-gray-200">{value || 'Não informado'}</p>
   </div>
 );
 
@@ -195,9 +194,6 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
 
   const handlePointerDown = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isTopCard || showDetails) return;
-    if ('touches' in e) {
-      e.preventDefault();
-    }
     hasMovedRef.current = false;
     setIsDragging(true);
     setStartPos(getPointerPosition(e));
@@ -359,18 +355,15 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         onMouseDown={handlePointerDown}
         onTouchStart={handlePointerDown}
         onClick={handleClick}
+        aria-hidden={!isTopCard}
       >
         <div className="relative w-full h-full bg-gray-700 rounded-2xl shadow-xl overflow-hidden">
-          {profile.images.length > 0 ? (
-            <img
-              src={profile.images[0]}
-              alt={profile.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <DefaultAvatar />
-          )}
+          <img
+            src={profile.images?.[0] || 'https://via.placeholder.com/600x800.png?text=Sem+Foto'}
+            alt={profile.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
 
           {isTopCard && !showDetails && (
             <KeyboardHint onHintClick={handleManualSwipe} />
@@ -414,7 +407,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
           >
             <div>
               <h1 className="text-3xl font-bold">
-                {profile.apelido}, <span className="font-light">{profile.age}</span>
+                {profile.name}, <span className="font-light">{profile.age}</span>
               </h1>
               <p className="text-gray-300 text-lg">{profile.tagline}</p>
               <div className="mt-2 flex items-center flex-wrap gap-2">
@@ -444,7 +437,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         <div className="absolute inset-0 z-40 bg-gray-900/90 backdrop-blur-sm text-white flex flex-col">
           <header className="p-5 pb-4 shrink-0 relative bg-gray-900/50 shadow-md">
             <h1 className="text-3xl font-bold">
-              {profile.apelido}, <span className="font-light">{profile.age}</span>
+              {profile.name}, <span className="font-light">{profile.age}</span>
             </h1>
             <p className="text-gray-300">
               {profile.city}, {profile.state}
@@ -465,26 +458,20 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
             </button>
           </header>
 
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto flex-1 no-scrollbar">
             <div className="p-5 pt-4 space-y-6">
               <div>
-                <div className="flex overflow-x-auto space-x-2 pb-2 -mx-5 px-5 snap-x snap-mandatory">
-                  {profile.images.length > 0 ? (
-                    profile.images.map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`${profile.name} ${index + 1}`}
-                        className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
-                        onClick={() => setSelectedImage(img)}
-                        loading="lazy"
-                      />
-                    ))
-                  ) : (
-                    <div className="w-40 h-52 rounded-lg flex-shrink-0 snap-center">
-                      <DefaultAvatar className="rounded-lg" />
-                    </div>
-                  )}
+                <div className="flex overflow-x-auto space-x-2 pb-2 -mx-5 px-5 snap-x snap-mandatory no-scrollbar">
+                  {profile.images.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`${profile.name} ${index + 1}`}
+                      className="w-40 h-52 object-cover rounded-lg flex-shrink-0 snap-center cursor-pointer"
+                      onClick={() => setSelectedImage(img)}
+                      loading="lazy"
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -517,10 +504,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                   value={`${profile.age} anos`}
                   isMatch={ageMatch}
                 />
-                <div>
-                  <h2 className="text-red-400 font-bold">Interesse em</h2>
-                  <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
-                </div>
+                <DetailItem label="Interesse em" value={profile.interesseEm} />
                 <DetailItem label="Signo" value={profile.signo} isMatch={signoMatch} />
                 <DetailItem
                   label="Religião"
@@ -553,10 +537,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                   }
                   isMatch={pcdMatch}
                 />
-                <div>
-                  <h2 className="text-red-400 font-bold">Idiomas</h2>
-                  <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
-                </div>
+                <DetailItem label="Idiomas" value={profile.idiomas.join(', ')} />
               </div>
             </div>
           </div>
@@ -569,6 +550,8 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
           className="fixed inset-x-0 top-0 bg-black/90 z-50 flex items-center justify-center p-4"
           style={{ bottom: '80px' }} // 80px is h-20 of BottomNav
           onClick={() => setSelectedImage(null)}
+          role="dialog"
+          aria-modal="true"
         >
           <button
             onClick={() => setSelectedImage(null)}

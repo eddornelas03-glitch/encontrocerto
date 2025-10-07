@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import type { UserProfile } from '../types';
+import { REPORT_REASONS } from '../constants';
 
 interface ReportModalProps {
   match: UserProfile;
   onClose: () => void;
   onSubmit: () => void;
 }
-
-const reportReasons = [
-    'Comportamento Ofensivo',
-    'Perfil Falso / Catfish',
-    'Spam ou Golpes',
-    'Conteúdo Inapropriado',
-    'Menor de idade',
-    'Outro',
-];
 
 export const ReportModal: React.FC<ReportModalProps> = ({ match, onClose, onSubmit }) => {
     const [selectedReason, setSelectedReason] = useState('');
@@ -50,19 +42,19 @@ export const ReportModal: React.FC<ReportModalProps> = ({ match, onClose, onSubm
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="report-title">
-            <div className="bg-gray-700 text-white rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-gray-800 text-white rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex justify-between items-center p-5 border-b border-gray-700 shrink-0">
                     <h1 id="report-title" className="text-xl font-bold text-red-500">Denunciar {match.name}</h1>
                      <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Fechar modal de denúncia">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </header>
-                <main className="overflow-y-auto p-6">
+                <main className="overflow-y-auto p-6 no-scrollbar">
                     <form onSubmit={handleSubmit}>
                         <fieldset>
                             <legend className="text-gray-300 mb-4">Selecione o motivo da denúncia. Sua denúncia é confidencial.</legend>
                             <div className="space-y-3 mb-4">
-                                {reportReasons.map(reason => (
+                                {REPORT_REASONS.map(reason => (
                                     <label key={reason} className="flex items-center p-3 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 has-[:checked]:bg-red-900/50 has-[:checked]:ring-2 has-[:checked]:ring-red-500">
                                         <input
                                             type="radio"

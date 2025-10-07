@@ -97,9 +97,9 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
             ]
         },
         {
-            title: 'Email para Contato',
+            title: 'Contato',
             items: [
-                { key: 'contact-email', label: 'eddornelas@hotmail.com', href: 'mailto:eddornelas@hotmail.com' }
+                { key: 'contact-email', label: 'contato@encontrocerto.com', href: 'mailto:contato@encontrocerto.com' }
             ]
         }
     ];
@@ -110,8 +110,8 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onShowPolicy }) =>
                 <div className="flex items-center gap-2">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EF4444"/>
-                        <path d="M8.5 12C9.87827 9.83333 10.5674 8.75 12 7C13.4326 8.75 14.1217 9.83333 15.5 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="12" cy="7" r="1.5" fill="white"/>
+                        <path d="M8.5 12C9.87827 9.83333 10.5674 8.75 12 7C13.4326 8.75 14.1217 9.83333 15.5 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="9" r="1.5" fill="white"/>
                     </svg>
                     <span className="text-xl font-bold text-white">Encontro Certo</span>
                 </div>

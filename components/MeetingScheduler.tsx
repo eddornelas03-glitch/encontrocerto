@@ -32,13 +32,13 @@ export const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm"
+        className="bg-gray-800 text-white rounded-2xl shadow-lg p-6 w-full max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-gray-800 text-center">
+        <h2 className="text-2xl font-bold text-red-500 text-center">
           Agendar Encontro
         </h2>
-        <p className="text-gray-500 text-center mt-1">
+        <p className="text-gray-300 text-center mt-1">
           Proponha um dia e horário para encontrar {match.name}.
         </p>
 
@@ -46,7 +46,7 @@ export const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({
           <div>
             <label
               htmlFor="date"
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-300 text-sm font-bold mb-2"
             >
               Data
             </label>
@@ -55,14 +55,14 @@ export const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               required
             />
           </div>
           <div>
             <label
               htmlFor="time"
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-300 text-sm font-bold mb-2"
             >
               Horário
             </label>
@@ -71,21 +71,21 @@ export const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               required
             />
           </div>
           <div className="flex flex-col gap-3 pt-4">
             <button
               type="submit"
-              className="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-full hover:bg-pink-600 transition-colors"
+              className="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-full hover:bg-red-600 transition-colors"
             >
               Enviar Proposta
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-full text-gray-600 font-bold py-3 px-4 rounded-full hover:bg-gray-100 transition-colors"
+              className="w-full text-gray-300 font-bold py-3 px-4 rounded-full hover:bg-gray-700 transition-colors"
             >
               Cancelar
             </button>

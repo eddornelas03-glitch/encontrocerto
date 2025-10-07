@@ -1,8 +1,7 @@
-import { GoogleGenAI, Type, HarmCategory } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import type { UserProfile, Message, User, MessageSuggestion } from '../types';
 
-// Vite will replace process.env.GEMINI_API_KEY with the actual key from the .env file
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
 
 const moderationPrompt = `Você é um moderador de um aplicativo de encontros. Analise o texto abaixo e responda apenas se ele for ofensivo.
 
@@ -23,18 +22,26 @@ Texto do usuário:
 [TEXTO]
 """`;
 
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
+const nudityCheckPrompt = `Você é um sistema de moderação de conteúdo para um aplicativo de namoro. Analise a imagem. A imagem contém nudez explícita ou conteúdo sexualmente sugestivo? Responda APENAS com "SIM" se contiver, ou "NAO" se for segura.`;
+
+const fileToGenerativePart = async (file: File) => {
+  const base64EncodedDataPromise = new Promise<string>((resolve) => {
     const reader = new FileReader();
+    reader.onloadend = () =>
+      resolve((reader.result as string).split(',')[1]);
     reader.readAsDataURL(file);
-    reader.onload = () => resolve((reader.result as string).split(',')[1]);
-    reader.onerror = (error) => reject(error);
   });
+  return {
+    inlineData: {
+      data: await base64EncodedDataPromise,
+      mimeType: file.type,
+    },
+  };
 };
 
 const formatProfileForPrompt = (profile: UserProfile) => {
   return `
-- Apelido: ${profile.apelido}
+- Apelido: ${profile.name}
 - Objetivo: ${profile.relationshipGoal}
 - Bio: "${profile.bio}"
 - Interesses: ${profile.interests.join(', ')}
@@ -60,6 +67,7 @@ USER2_PLACEHOLDER
 
 const formatMessagesForSuggestions = (
   messages: Message[],
+  // FIX: Changed currentUserId from number to string to match User.id type.
   currentUserId: string,
   matchName: string,
 ) => {
@@ -100,92 +108,47 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
     const fullPrompt = moderationPrompt.replace('[TEXTO]', text);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: fullPrompt,
     });
 
-    const result = await response.response;
-    const resultText = result.text().trim().toUpperCase();
+    const resultText = response.text?.trim().toUpperCase();
     return resultText === 'OFENSIVO';
   } catch (error) {
     console.error('Error calling Gemini API for moderation:', error);
+    // Fail open: if the moderation service fails, allow the content.
+    // In a real production app, you might want to handle this differently.
     return false;
   }
 };
 
 export const isImageNude = async (file: File): Promise<boolean> => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
   try {
-    const imageBase64 = await fileToBase64(file);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        requests: [
-          {
-            image: {
-              content: imageBase64,
-            },
-            features: [
-              {
-                type: 'SAFE_SEARCH_DETECTION',
-              },
-            ],
-          },
-        ],
-      }),
+    const imagePart = await fileToGenerativePart(file);
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts: [{ text: nudityCheckPrompt }, imagePart] },
     });
 
-    clearTimeout(timeout);
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Erro ao chamar Google Vision API:', errorBody);
-      return true; // FAIL-CLOSED: Bloqueia se a API falhar.
+    // The Gemini API may block a response due to safety filters. In our case,
+    // this is a strong signal that the image is inappropriate. We treat this as
+    // a positive detection for nudity. `response.text` would be empty in this case.
+    if (!response.text || response.text.trim() === '') {
+      console.warn(
+        'Gemini response for nudity check was empty. Assuming nudity for safety.',
+      );
+      return true;
     }
 
-    const result = await response.json();
-    const safeSearch = result.responses?.[0]?.safeSearchAnnotation;
-
-    if (!safeSearch) {
-      console.warn('Nenhuma anotação de SafeSearch encontrada. Bloqueando por segurança.');
-      return true; // FAIL-CLOSED: Bloqueia se a resposta for inesperada.
-    }
-
-    const { adult, racy, violence } = safeSearch;
-    console.log("Google Cloud Vision SafeSearch:", { adult, racy, violence });
-
-    // Adjusted logic for better balance:
-    // - Stricter on 'adult' and 'violence'.
-    // - More lenient on 'racy' to allow for things like swimwear.
-    const isUnsafe =
-      ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'].includes(adult) ||
-      ['LIKELY', 'VERY_LIKELY'].includes(racy) ||
-      ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'].includes(violence);
-
-    if (isUnsafe) {
-      console.log(`Imagem sinalizada como imprópria. Adult: ${adult}, Racy: ${racy}, Violence: ${violence}`);
-    }
-
-    return isUnsafe;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.error('Erro na moderação de imagem: Timeout. Bloqueando por segurança.');
-    } else {
-      console.error('Erro na moderação de imagem. Bloqueando por segurança:', error);
-    }
-    return true; // FAIL-CLOSED: Bloqueia em qualquer erro.
-  } finally {
-    clearTimeout(timeout);
+    const resultText = response.text.trim().toUpperCase();
+    return resultText === 'SIM';
+  } catch (error) {
+    console.error('Error calling Gemini API for nudity check:', error);
+    // Fail closed: If any error occurs during the API call (including safety
+    // blocks that throw an error), we assume the image is not safe. This ensures
+    // that a generic error message is not shown to the user, and instead, it's
+    // treated as a nudity detection, as requested.
+    return true;
   }
 };
 
@@ -199,12 +162,11 @@ export const getCompatibilityAnalysis = async (
       .replace('USER2_PLACEHOLDER', formatProfileForPrompt(user2Profile));
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
 
-    const result = await response.response;
-    return result.text().trim();
+    return response.text.trim();
   } catch (error) {
     console.error('Error calling Gemini API for compatibility analysis:', error);
     return '**✨ Por que vocês podem dar certo?**\n\nParece que vocês têm alguns interesses em comum! Explorar o que vocês compartilham pode ser um ótimo começo para uma conversa incrível.';
@@ -228,12 +190,12 @@ export const getMessageSuggestions = async (
         formatMessagesForSuggestions(
           lastMessages,
           currentUser.id,
-          matchProfile.apelido,
+          matchProfile.name,
         ),
       );
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -258,8 +220,7 @@ export const getMessageSuggestions = async (
       },
     });
 
-    const result = await response.response;
-    const jsonString = result.text().trim();
+    const jsonString = response.text.trim();
     const suggestions: MessageSuggestion[] = JSON.parse(jsonString);
 
     if (Array.isArray(suggestions) && suggestions.length > 0) {

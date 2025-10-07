@@ -3,7 +3,6 @@ import type { UserProfile } from '../types';
 import { ProfileCard } from '../components/ProfileCard';
 import { AdModal } from '../components/AdModal';
 import { FilterModal } from '../components/FilterModal';
-import { AppTour } from '../components/AppTour';
 import { useExploreProfiles } from '../hooks/useExploreProfiles';
 
 interface ExploreProps {
@@ -17,20 +16,25 @@ const SettingsIcon = () => (
     fill="currentColor"
     className="w-6 h-6"
   >
-    <path d="M19.14,12.74c0.03-0.3,0.06-0.6,0.06-0.91s-0.03-0.61-0.06-0.91l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46c-0.12-0.22-0.39-0.3-0.61-0.22l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65C14.17,2.13,13.92,2,13.64,2h-4c-0.27,0-0.52,0.13-0.63,0.36L8.62,5.02C8,5.27,7.44,5.6,6.92,6.01L4.43,5.01C4.21,4.92,3.94,5,3.82,5.22l-2,3.46c-0.12,0.22-0.07,0.49,0.12,0.64l2.11,1.65C4.03,11.3,4,11.61,4,11.92s0.03,0.61,0.06,0.91l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46c0.12,0.22,0.39,0.3,0.61,0.22l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65c0.11,0.23,0.36,0.36,0.63,0.36h4c0.27,0,0.52-0.13,0.63,0.36l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1c0.22,0.08,0.49,0,0.61-0.22l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.14,12.74z M12,15.5c-1.93,0-3.5-1.57-3.5-3.5s1.57-3.5,3.5-3.5s3.5,1.57,3.5,3.5S13.93,15.5,12,15.5z" />
-  </svg>
-);
-
-const TourIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-6 h-6"
-  >
     <path
       fillRule="evenodd"
-      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-1.423-2.593-1.852-4.016-.962a.75.75 0 00.706 1.258c.465-.233.996-.034 1.229.431.233.465.034.996-.431 1.229a.75.75 0 00-.706 1.258c1.423.89 3.126.46 4.016-.962a.75.75 0 00-1.258-.706zM12 15.75a.75.75 0 01.75.75v.008a.75.75 0 01-1.5 0v-.008a.75.75 0 01.75-.75z"
+      d="M11.078 2.25c-.917 0-1.699.663-1.946 1.55l-.292.966a.75.75 0 00.231.815l.73 1.02a.75.75 0 01-.23 1.05l-1.096.73a.75.75 0 00-.231.815l.292.966c.247.887 1.029 1.55 1.946 1.55h3.844c.917 0 1.699-.663 1.946-1.55l.292-.966a.75.75 0 00-.231-.815l-.73-1.02a.75.75 0 01.23-1.05l1.096-.73a.75.75 0 00.231-.815l-.292-.966a1.99 1.99 0 00-1.946-1.55h-3.844zM12 8.25a.75.75 0 01.75.75v.008a.75.75 0 01-1.5 0V9A.75.75 0 0112 8.25z"
+      clipRule="evenodd"
+    />
+    <path
+      d="M18.75 9.75a.75.75 0 000-1.5h-.563c-.66-0-1.219-.559-1.219-1.219v-.563a.75.75 0 00-1.5 0v.563c0 .66.559 1.219 1.219 1.219h.563zM5.25 9.75a.75.75 0 010-1.5h.563c.66 0 1.219-.559 1.219-1.219v-.563a.75.75 0 011.5 0v.563c0 .66-.559 1.219-1.219 1.219H5.25z"
+    />
+    <path
+      fillRule="evenodd"
+      d="M9 12.75a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75zM6.75 15.75a.75.75 0 000-1.5h-.563c-.66 0-1.219.559-1.219 1.219v.563a.75.75 0 001.5 0v-.563c0-.66.559-1.219 1.219-1.219h.563zM18.75 15.75a.75.75 0 000-1.5h-.563c-.66 0-1.219.559-1.219 1.219v.563a.75.75 0 001.5 0v-.563c0-.66.559-1.219 1.219-1.219h.563z"
+      clipRule="evenodd"
+    />
+    <path
+      d="M12.75 17.25a.75.75 0 01.75.75v.008a.75.75 0 01-1.5 0V18a.75.75 0 01.75-.75z"
+    />
+    <path
+      fillRule="evenodd"
+      d="M11.078 21.75c-.917 0-1.699-.663-1.946-1.55l-.292-.966a.75.75 0 00-.231-.815l-.73-1.02a.75.75 0 01.23-1.05l1.096-.73a.75.75 0 00.231-.815l-.292-.966a1.99 1.99 0 011.946-1.55h3.844c.917 0 1.699.663 1.946 1.55l.292.966a.75.75 0 00.231.815l.73 1.02a.75.75 0 01-.23 1.05l-1.096.73a.75.75 0 00-.231.815l.292.966c-.247.887-1.029 1.55-1.946 1.55h-3.844z"
       clipRule="evenodd"
     />
   </svg>
@@ -52,11 +56,10 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch }) => {
   const [keyboardSwipe, setKeyboardSwipe] = useState<
     'left' | 'right' | 'super' | 'reset' | null
   >(null);
-  const [isTourActive, setIsTourActive] = useState(false);
 
   const onSwipe = useCallback(
     (direction: 'left' | 'right' | 'super') => {
-      const currentProfile = remainingProfiles[remainingProfiles.length - 1];
+      const currentProfile = remainingProfiles[0];
       if (!currentProfile) return;
 
       if (direction === 'super') {
@@ -72,7 +75,7 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch }) => {
 
   const handleAdClose = (watched: boolean) => {
     setShowAd(false);
-    const currentProfile = remainingProfiles[remainingProfiles.length - 1];
+    const currentProfile = remainingProfiles[0];
     if (watched && currentProfile) {
       handleSwipe(currentProfile, 'super');
       setKeyboardSwipe(null);
@@ -134,8 +137,8 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch }) => {
 
     return (
       <div data-tour-id="explore-card-stack" className="absolute inset-0">
-        {remainingProfiles.reverse().map((profile, index) => {
-          const isTopCard = index === remainingProfiles.length - 1;
+        {remainingProfiles.map((profile, index) => {
+          const isTopCard = index === 0;
           return (
             <ProfileCard
               key={profile.id}
@@ -146,23 +149,16 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch }) => {
               currentUserPreferences={user!.preferences}
             />
           );
-        })}
+        }).reverse()}
       </div>
     );
   };
 
   return (
-    <div className="relative w-full h-full flex-grow">
+    <div className="relative w-full h-full flex-grow bg-gray-900">
       <header className="absolute top-0 left-0 right-0 z-30 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent">
         <h1 className="text-2xl font-bold text-white drop-shadow-lg">Explorar</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsTourActive(true)}
-            className="text-white p-2 bg-white/10 rounded-full backdrop-blur-sm hover:bg-white/20 animate-pulse-glow"
-            aria-label="Tour pelo App"
-          >
-            <TourIcon />
-          </button>
           <button
             data-tour-id="explore-filters-btn"
             onClick={() => setShowFilters(true)}
@@ -186,7 +182,8 @@ export const Explore: React.FC<ExploreProps> = ({ onNewMatch }) => {
           allProfiles={allAvailableProfiles}
         />
       )}
-      {isTourActive && <AppTour onClose={() => setIsTourActive(false)} />}
     </div>
   );
 };
+
+export default Explore;

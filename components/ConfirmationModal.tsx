@@ -12,7 +12,7 @@ interface ConfirmationModalProps {
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ title, message, confirmText, cancelText, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirmation-title">
-      <div className="bg-gray-700 rounded-2xl shadow-lg p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-800 rounded-2xl shadow-lg p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
         <h2 id="confirmation-title" className="text-xl font-bold text-white text-center">{title}</h2>
         <p className="text-gray-300 text-center mt-2 text-sm">{message}</p>
         <div className="flex flex-col gap-3 pt-6">

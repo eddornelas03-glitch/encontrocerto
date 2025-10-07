@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import type { UserProfile } from '../types';
-import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
-import { DefaultAvatar } from './DefaultAvatar';
+import { getCompatibilityAnalysis } from '../services/geminiService';
+import { useAuth } from '../context/AuthContext';
 
 interface MatchModalProps {
   match: UserProfile;
-  currentUserProfile: UserProfile;
   onClose: () => void;
   onSendMessage: () => void;
 }
 
 export const MatchModal: React.FC<MatchModalProps> = ({
   match,
-  currentUserProfile,
   onClose,
   onSendMessage,
 }) => {
   const [explanation, setExplanation] = useState('Analisando compatibilidade...');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const getExplanation = async () => {
-      const text = await supabase.getCompatibilityExplanation(match);
+      if (!user) return;
+      const text = await getCompatibilityAnalysis(user.profile, match);
       setExplanation(text);
     };
     getExplanation();
-  }, [match]);
+  }, [match, user]);
 
   const handleSendMessageClick = () => {
     onSendMessage();
-    navigate(`/matches/${match.id}`);
+    // No need to navigate here, onSendMessage already does it in App.tsx
   };
 
   return (
@@ -42,7 +42,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
       aria-labelledby="match-title"
     >
       <div
-        className="bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl shadow-lg text-center p-6 w-full max-w-sm relative transform transition-all scale-100"
+        className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl shadow-lg text-center p-6 w-full max-w-sm relative transform transition-all scale-100"
         onClick={(e) => e.stopPropagation()}
       >
         <h2
@@ -56,41 +56,26 @@ export const MatchModal: React.FC<MatchModalProps> = ({
         </p>
 
         <div className="flex justify-center items-center my-6 space-x-[-2rem]">
-          <div className="w-28 h-28 rounded-full object-cover border-4 border-red-500 shadow-lg transform -rotate-12 overflow-hidden">
-            {currentUserProfile.images.length > 0 ? (
-              <img
-                src={currentUserProfile.images[0]}
-                alt="Você"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <DefaultAvatar />
-            )}
-          </div>
-          <div className="w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-lg transform rotate-12 overflow-hidden">
-            {match.images.length > 0 ? (
-              <img
-                src={match.images[0]}
-                alt={match.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <DefaultAvatar />
-            )}
-          </div>
+          <img
+            src={user?.profile.images?.[0] || 'https://via.placeholder.com/300x300.png?text=Sem+Foto'}
+            alt="Você"
+            className="w-28 h-28 rounded-full object-cover border-4 border-red-500 shadow-lg transform -rotate-12"
+          />
+          <img
+            src={match.images?.[0] || 'https://via.placeholder.com/300x300.png?text=Sem+Foto'}
+            alt={match.name}
+            className="w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-lg transform rotate-12"
+          />
         </div>
 
-        <div className="bg-white/10 p-3 rounded-lg mb-6">
-          <h3 className="font-semibold text-yellow-400 text-sm">
-            Por que vocês combinam?
-          </h3>
-          <p className="text-gray-200 text-xs mt-1">{explanation}</p>
+        <div className="bg-white/5 p-3 rounded-lg mb-6 text-left">
+          <p className="text-gray-200 text-sm whitespace-pre-wrap">{explanation}</p>
         </div>
 
         <div className="flex flex-col gap-4">
           <button
             onClick={handleSendMessageClick}
-            className="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-full hover:bg-red-600 transition-colors"
+            className="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-full hover:bg-red-600 transition-colors animate-pulse-glow"
           >
             Enviar Mensagem
           </button>

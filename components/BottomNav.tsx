@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 interface BottomNavProps {
   hasNewMatch: boolean;
@@ -10,21 +10,19 @@ const ExploreIcon = ({ isActive }: { isActive: boolean }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    className={`w-8 h-8 ${isActive ? 'text-red-500' : 'text-gray-400'}`}
+    fill="currentColor"
+    className={`w-7 h-7 transition-colors ${
+      isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-red-400'
+    }`}
   >
     <path
-      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-      fill="currentColor"
+      fillRule="evenodd"
+      d="M12.963 2.286a.75.75 0 00-1.071 1.052A3.75 3.75 0 0115.75 6H18a.75.75 0 000-1.5h-2.25a2.25 2.25 0 00-2.25-2.25.75.75 0 00-1.052-1.071zM12 6a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5zM3.75 6A2.25 2.25 0 006 8.25H8.25a.75.75 0 000-1.5H6A3.75 3.75 0 019.75 3h.003a.75.75 0 00.707-1.033A3.75 3.75 0 016.75 1.5a.75.75 0 00-1.49.146A2.25 2.25 0 003.75 6z"
+      clipRule="evenodd"
     />
     <path
-      d="M8.5 12C9.87827 9.83333 10.5674 8.75 12 7C13.4326 8.75 14.1217 9.83333 15.5 12"
-      stroke={isActive ? 'white' : '#111827'}
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      d="M12 12.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zm0-7.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 0112 5.25zM15.75 12a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zM4.5 12a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zM14.47 15.53a.75.75 0 10-1.06-1.06l-2.12 2.12-2.12-2.12a.75.75 0 00-1.06 1.06l2.12 2.12-2.12 2.12a.75.75 0 101.06 1.06l2.12-2.12 2.12 2.12a.75.75 0 101.06-1.06l-2.12-2.12 2.12-2.12z"
     />
-    <circle cx="12" cy="7" r="1.5" fill={isActive ? 'white' : '#111827'} />
   </svg>
 );
 
@@ -33,7 +31,9 @@ const ChatIcon = ({ isActive }: { isActive: boolean }) => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={`w-7 h-7 ${isActive ? 'text-red-500' : 'text-gray-400'}`}
+    className={`w-7 h-7 transition-colors ${
+      isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-red-400'
+    }`}
   >
     <path
       fillRule="evenodd"
@@ -48,7 +48,9 @@ const UserIcon = ({ isActive }: { isActive: boolean }) => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={`w-7 h-7 ${isActive ? 'text-red-500' : 'text-gray-400'}`}
+    className={`w-7 h-7 transition-colors ${
+      isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-red-400'
+    }`}
   >
     <path
       fillRule="evenodd"
@@ -62,7 +64,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   hasNewMatch,
   setHasNewMatch,
 }) => {
-  const location = useLocation();
   const views: {
     path: string;
     title: string;
@@ -76,35 +77,40 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav className="z-20 bg-gray-900/80 backdrop-blur-sm shrink-0">
       <div className="w-full h-20 flex justify-around items-center border-t border-gray-700">
-        {views.map(({ path, title, icon: Icon }) => {
-          const isActive = location.pathname.startsWith(path);
-          return (
-            <Link
-              key={path}
-              to={path}
-              onClick={() => {
-                if (path === '/matches') {
-                  setHasNewMatch(false);
-                }
-              }}
-              className="relative flex flex-col items-center gap-1 text-gray-400 transition-colors duration-300 hover:text-red-500"
-              title={title}
-              data-tour-id={`${path.substring(1)}-nav`}
-            >
-              <Icon isActive={isActive} />
-              <span
-                className={`text-xs ${
-                  isActive ? 'text-red-500' : 'text-gray-400'
-                }`}
-              >
-                {title}
-              </span>
-              {path === '/matches' && hasNewMatch && (
-                <span className="absolute -top-1 right-1 block h-3 w-3 rounded-full bg-red-500 border-2 border-white"></span>
-              )}
-            </Link>
-          );
-        })}
+        {views.map(({ path, title, icon: Icon }) => (
+          <NavLink
+            key={path}
+            to={path}
+            onClick={() => {
+              if (path === '/matches') {
+                setHasNewMatch(false);
+              }
+            }}
+            className={({ isActive }) =>
+              `relative flex flex-col items-center justify-center gap-1 text-gray-400 group h-full w-full ${
+                isActive ? 'text-red-500' : ''
+              }`
+            }
+            title={title}
+            data-tour-id={`${path.substring(1)}-nav`}
+          >
+            {({ isActive }) => (
+              <>
+                <Icon isActive={isActive} />
+                <span
+                  className={`text-xs font-semibold transition-colors ${
+                    isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-red-400'
+                  }`}
+                >
+                  {title}
+                </span>
+                {path === '/matches' && hasNewMatch && (
+                  <span className="absolute top-3 right-[calc(50%-24px)] block h-3 w-3 rounded-full bg-red-500 border-2 border-gray-900 animate-pulse"></span>
+                )}
+              </>
+            )}
+          </NavLink>
+        ))}
       </div>
     </nav>
   );

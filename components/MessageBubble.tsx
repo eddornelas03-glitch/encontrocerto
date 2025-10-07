@@ -9,24 +9,20 @@ const SparklesIcon = () => (
 );
 
 const AiAnalysisMessage: React.FC<{ text: string }> = ({ text }) => {
-    const parts = text.split('\n');
-    const title = parts[0] || 'Análise de Compatibilidade';
-    const body = parts.slice(1).join('\n');
-
     return (
-         <div className="my-4 p-4 bg-gray-600/50 border border-red-500/30 rounded-lg text-center">
-            <div className="flex justify-center items-center gap-2 mb-3">
+         <div className="my-4 p-4 bg-gray-600/50 border border-red-500/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon />
-                <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400">{title.replace(/\*/g, '')}</h3>
+                <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400">Análise de Compatibilidade</h3>
             </div>
-            <p className="text-gray-300 text-sm whitespace-pre-wrap">{body}</p>
+            <p className="text-gray-300 text-sm whitespace-pre-wrap">{text}</p>
         </div>
     );
 };
 
 const SystemMessage: React.FC<{ text: string }> = ({ text }) => (
-    <div className="text-center text-xs text-gray-500 py-2 px-4">
-        <span className="bg-gray-600 text-gray-300 px-2 py-1 rounded-full">{text}</span>
+    <div className="text-center text-xs text-gray-400 py-2 px-4">
+        <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded-full">{text}</span>
     </div>
 );
 
@@ -37,7 +33,7 @@ const UserMessage: React.FC<{ message: Message; isCurrentUser: boolean }> = ({ m
     <>
         <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs md:max-w-md rounded-2xl shadow-sm ${
-                message.imageUrl ? 'p-1' : 'px-4 py-2'
+                message.imageUrl ? 'p-1 bg-transparent' : 'px-4 py-2'
             } ${
                 isCurrentUser 
                     ? 'bg-red-500 text-white rounded-br-none' 
@@ -82,7 +78,7 @@ const UserMessage: React.FC<{ message: Message; isCurrentUser: boolean }> = ({ m
 
 interface MessageBubbleProps {
     message: Message;
-    currentUserId: number;
+    currentUserId: string;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUserId }) => {

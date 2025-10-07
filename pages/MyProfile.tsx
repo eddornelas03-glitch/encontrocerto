@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { DefaultAvatar } from '../components/DefaultAvatar';
 
 interface MyProfileProps {}
 
@@ -56,23 +55,19 @@ export const MyProfile: React.FC<MyProfileProps> = () => {
   };
 
   return (
-    <div className="h-full w-full bg-gray-900 text-white overflow-y-auto pb-24">
-      <div className="relative w-full h-80 bg-gray-800">
-        {profile.images.length > 0 ? (
-          <img
-            src={profile.images[0]}
-            alt={profile.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <DefaultAvatar />
-        )}
+    <div className="h-full w-full bg-gray-900 text-white overflow-y-auto pb-24 no-scrollbar">
+      <div className="relative">
+        <img
+          src={profile.images?.[0] || 'https://via.placeholder.com/600x800.png?text=Sem+Foto'}
+          alt={profile.name}
+          className="w-full h-80 object-cover"
+          loading="lazy"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
         <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-sm">
           <HeartIcon />
           {profile.showLikes ? (
-            <span className="text-white font-bold">{profile.numLikes}</span>
+            <span className="text-white font-bold">{profile.numLikes || 0}</span>
           ) : (
             <span className="text-gray-300">Curtidas ocultas</span>
           )}
@@ -83,7 +78,7 @@ export const MyProfile: React.FC<MyProfileProps> = () => {
         <div className="flex justify-between items-end p-6 pt-0">
           <div>
             <h1 className="text-3xl font-bold text-red-500">
-              {profile.apelido}, <span className="font-light">{profile.age}</span>
+              {profile.name}, <span className="font-light">{profile.age}</span>
             </h1>
             <p className="text-gray-300">
               {profile.city}, {profile.state}
@@ -107,7 +102,7 @@ export const MyProfile: React.FC<MyProfileProps> = () => {
         <div className="mt-6">
           <h2 className="text-red-500 font-bold">Interesses</h2>
           <div className="mt-2 flex flex-wrap gap-2">
-            {profile.interests.map((interest) => (
+            {(profile.interests || []).map((interest) => (
               <span
                 key={interest}
                 className="bg-gray-600 text-gray-200 text-sm font-medium px-3 py-1 rounded-full"
@@ -121,49 +116,49 @@ export const MyProfile: React.FC<MyProfileProps> = () => {
         <div className="grid grid-cols-2 gap-x-4 gap-y-6 mt-6 border-t border-gray-700 pt-6">
           <div>
             <h2 className="text-red-500 font-bold">Objetivo</h2>
-            <p className="mt-1 text-gray-200">{profile.relationshipGoal}</p>
+            <p className="mt-1 text-gray-200">{profile.relationshipGoal || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Interesse em</h2>
-            <p className="mt-1 text-gray-200">{profile.interesseEm}</p>
+            <p className="mt-1 text-gray-200">{profile.interesseEm || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Signo</h2>
-            <p className="mt-1 text-gray-200">{profile.signo}</p>
+            <p className="mt-1 text-gray-200">{profile.signo || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Religião</h2>
-            <p className="mt-1 text-gray-200">{profile.religiao}</p>
+            <p className="mt-1 text-gray-200">{profile.religiao || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Altura</h2>
-            <p className="mt-1 text-gray-200">{profile.altura} cm</p>
+            <p className="mt-1 text-gray-200">{profile.altura ? `${profile.altura} cm` : 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Corpo</h2>
-            <p className="mt-1 text-gray-200">{profile.porteFisico}</p>
+            <p className="mt-1 text-gray-200">{profile.porteFisico || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Bebidas</h2>
-            <p className="mt-1 text-gray-200">{profile.consumoAlcool}</p>
+            <p className="mt-1 text-gray-200">{profile.consumoAlcool || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Fumo</h2>
-            <p className="mt-1 text-gray-200">{profile.fumante}</p>
+            <p className="mt-1 text-gray-200">{profile.fumante || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Pets</h2>
-            <p className="mt-1 text-gray-200">{profile.pets}</p>
+            <p className="mt-1 text-gray-200">{profile.pets || 'Não informado'}</p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">PCD</h2>
             <p className="mt-1 text-gray-200">
-              {profile.pcd === 'Sim' ? `Sim (${profile.pcdTipo})` : profile.pcd}
+              {profile.pcd === 'Sim' ? `Sim (${profile.pcdTipo || 'Não especificado'})` : (profile.pcd || 'Não informado')}
             </p>
           </div>
           <div>
             <h2 className="text-red-500 font-bold">Idiomas</h2>
-            <p className="mt-1 text-gray-200">{profile.idiomas.join(', ')}</p>
+            <p className="mt-1 text-gray-200">{(profile.idiomas || []).join(', ')}</p>
           </div>
         </div>
 
@@ -271,3 +266,5 @@ export const MyProfile: React.FC<MyProfileProps> = () => {
     </div>
   );
 };
+
+export default MyProfile;

@@ -86,3 +86,25 @@ export const PREF_FUMANTE_OPTIONS: UserPreferences['fumanteDesejado'] = [
 
 export const PREF_CONSUMO_ALCOOL_OPTIONS: UserPreferences['consumoAlcoolDesejado'] =
   ['Não bebe', 'Socialmente', 'Frequentemente', 'Indiferente'];
+
+export const defaultUserPreferences: UserPreferences = {
+  distanciaMaxima: 100,
+  idadeMinima: 18,
+  idadeMaxima: 99,
+  alturaMinima: 140,
+  alturaMaxima: 220,
+  porteFisicoDesejado: ['Indiferente'],
+  fumanteDesejado: ['Indiferente'],
+  consumoAlcoolDesejado: ['Indiferente'],
+  generoDesejado: 'Todos',
+  signoDesejado: ['Indiferente'],
+  religiaoDesejada: ['Indiferente'],
+  petsDesejado: 'Indiferente',
+  pcdDesejado: 'Indiferente',
+  disponibilidadeDesejada: [],
+  nomeDesejado: '',
+  objetivoDesejado: ['Indiferente'],
+  estadoDesejado: 'Indiferente',
+  cidadeDesejada: 'Indiferente',
+  enableMessageSuggestions: true,
+};

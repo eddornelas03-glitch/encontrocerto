@@ -26,10 +26,10 @@ export const AdModal: React.FC<AdModalProps> = ({ onClose }) => {
     >
       <div className="bg-gray-700 rounded-2xl shadow-lg text-center p-6 w-full max-w-sm relative">
         <h2 id="ad-title" className="text-2xl font-bold text-white">
-          Super Curtida
+          Amei!
         </h2>
         <p className="text-gray-300 mt-2">
-          Assista a este anúncio para enviar uma Super Curtida e se destacar!
+          Assista a este anúncio para enviar um "Amei!" e se destacar!
         </p>
 
         <div className="bg-gray-600 w-full h-40 my-6 flex items-center justify-center rounded-lg">

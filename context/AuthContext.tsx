@@ -5,38 +5,16 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import { supabase as supabaseService, mapProfileFromDb } from '../services/supabaseService';
-import type { Session, User, UserProfile, UserPreferences } from '../types';
-
-// Default preferences for new or incomplete profiles
-const defaultUserPreferences: UserPreferences = {
-  distanciaMaxima: 100,
-  idadeMinima: 18,
-  idadeMaxima: 99,
-  alturaMinima: 140,
-  alturaMaxima: 220,
-  porteFisicoDesejado: ['Indiferente'],
-  fumanteDesejado: ['Indiferente'],
-  consumoAlcoolDesejado: ['Indiferente'],
-  generoDesejado: 'Todos',
-  signoDesejado: ['Indiferente'],
-  religiaoDesejada: ['Indiferente'],
-  petsDesejado: 'Indiferente',
-  pcdDesejado: 'Indiferente',
-  disponibilidadeDesejada: [],
-  nomeDesejado: '',
-  objetivoDesejado: ['Indiferente'],
-  estadoDesejado: 'Indiferente',
-  cidadeDesejada: 'Indiferente',
-  enableMessageSuggestions: true,
-};
+import { supabase } from '../services/supabaseService';
+import type { Session, User, UserProfile } from '../types';
+import { defaultUserPreferences } from '../constants';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
   signOut: () => void;
-  updateUser: (updatedUser: User) => void;
+  updateUser: (updatedUser: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -44,10 +22,10 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: () => {},
-  updateUser: () => {},
+  updateUser: async () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.Node }> = ({
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -57,24 +35,80 @@ export const AuthProvider: React.FC<{ children: React.Node }> = ({
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabaseService.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setLoading(true);
       if (session?.user) {
-        const profileData = await supabaseService.fetchFullUserProfile(session.user.id);
+        let profile = await supabase.getUserProfile(session.user.id);
 
-        if (profileData) {
+        // Se o perfil não existir, é um novo usuário OAuth. Crie um perfil para ele.
+        if (!profile) {
+          profile = await supabase.createProfileForNewUser(session.user);
+        }
+
+        if (profile) {
+          // 1. Define o usuário imediatamente com os dados de perfil existentes.
           const fullUser: User = {
             id: session.user.id,
             email: session.user.email!,
-            profile: mapProfileFromDb(profileData),
-            preferences: profileData.preferences || defaultUserPreferences,
+            profile,
+            preferences: profile.preferences || defaultUserPreferences,
           };
           setUser(fullUser);
           setSession({ user: fullUser });
+
+          // 2. Em seguida, tenta obter e atualizar a localização em segundo plano.
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                // Atualiza o DB em segundo plano
+                supabase.updateUserLocation(session.user!.id, {
+                  latitude,
+                  longitude,
+                });
+
+                // Atualiza o estado do contexto para que o app use a localização imediatamente
+                setUser((prevUser) => {
+                  if (!prevUser) return null;
+                  const updatedProfile = {
+                    ...prevUser.profile,
+                    latitude,
+                    longitude,
+                  };
+                  return {
+                    ...prevUser,
+                    profile: updatedProfile as UserProfile,
+                  };
+                });
+                setSession((prevSession) => {
+                  if (!prevSession) return null;
+                  const updatedProfile = {
+                    ...prevSession.user.profile,
+                    latitude,
+                    longitude,
+                  };
+                  const updatedUser = {
+                    ...prevSession.user,
+                    profile: updatedProfile as UserProfile,
+                  };
+                  return { ...prevSession, user: updatedUser };
+                });
+              },
+              (error) => {
+                // O app continua funcionando mesmo que o usuário negue a permissão
+                console.warn(`Erro ao obter localização: ${error.message}`);
+              },
+            );
+          } else {
+            console.warn('Geolocalização não é suportada por este navegador.');
+          }
         } else {
-          // If a user is authenticated but has no profile (e.g., old account after a wipe),
-          // force a full sign out to prevent them from getting stuck.
-          console.warn(`User ${session.user.id} authenticated but has no profile. Forcing logout.`);
-          await supabaseService.auth.signOut();
+          // Caso onde o usuário existe no auth, mas o perfil não e a criação falhou
+          console.error(
+            `Falha ao buscar ou criar perfil para o usuário ${session.user.id}`,
+          );
+          await supabase.auth.signOut(); // Desloga o usuário para evitar estado inconsistente
           setUser(null);
           setSession(null);
         }
@@ -91,16 +125,22 @@ export const AuthProvider: React.FC<{ children: React.Node }> = ({
   }, []);
 
   const signOut = async () => {
-    await supabaseService.auth.signOut();
+    await supabase.auth.signOut();
     setSession(null);
     setUser(null);
   };
 
-  const updateUser = useCallback((updatedUser: User) => {
+  const updateUser = useCallback(async (updatedUser: User) => {
+    // Atualiza o estado local imediatamente para responsividade da UI
     setUser(updatedUser);
     setSession((prevSession) =>
       prevSession ? { ...prevSession, user: updatedUser } : null,
     );
+    // Persiste as mudanças no Supabase
+    await supabase.updateUserProfile(updatedUser.id, {
+      ...updatedUser.profile,
+      preferences: updatedUser.preferences,
+    });
   }, []);
 
   const value = {

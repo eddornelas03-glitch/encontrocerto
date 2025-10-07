@@ -170,7 +170,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     try {
         const isNude = await isImageNude(file);
         if (isNude) {
-            setError('Sua foto foi rejeitada por conter conteúdo impróprio.');
+            setError('Conteúdo impróprio detectado. Esta foto não pode ser enviada.');
             return;
         }
 
@@ -192,8 +192,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const resetToTextMode = () => {
     if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
-    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl); // Note: Data URLs don't need revoking, but good practice for object URLs.
-
+    
     setAudioPreviewUrl(null);
     setImagePreviewUrl(null);
     setRecordingTime(0);
@@ -292,7 +291,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     aria-label="Caixa de texto para nova mensagem"
                     className="w-full bg-transparent focus:outline-none text-white"
                     disabled={isSending}
-                    onKeyDown={(e) => { if(e.key === 'Enter') handleSend() }}
+                    onKeyDown={(e) => { if(e.key === 'Enter' && !isSending) handleSend() }}
                   />
                </div>
               {error && <p className="text-red-500 text-xs mt-1 ml-4">{error}</p>}

@@ -39,6 +39,12 @@ const LoadingFallback: React.FC = () => (
   </div>
 );
 
+const isProfileComplete = (profile: UserProfile | undefined): boolean => {
+  if (!profile) return false;
+  return !!profile.gender && !!profile.interesseEm;
+};
+
+
 const App: React.FC = () => {
   const { session, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -46,24 +52,16 @@ const App: React.FC = () => {
     'landing',
   );
 
-  const [matches, setMatches] = useState<UserProfile[]>([]);
   const [newMatch, setNewMatch] = useState<UserProfile | null>(null);
   const [hasNewMatch, setHasNewMatch] = useState(false);
 
   useEffect(() => {
-    if (session) {
-      const fetchInitialMatches = async () => {
-        const { data } = await supabase.fetchPublicProfiles(3);
-        if (data) {
-          setMatches(data);
-        }
-      };
-      fetchInitialMatches();
+    if (user && !isProfileComplete(user.profile)) {
+        navigate('/edit-profile');
     }
-  }, [session]);
+  }, [user, navigate]);
 
   const handleNewMatch = useCallback((profile: UserProfile) => {
-    setMatches((prev) => [profile, ...prev]);
     setNewMatch(profile);
     setHasNewMatch(true);
   }, []);
@@ -79,6 +77,22 @@ const App: React.FC = () => {
     setNewMatch(null);
   }, [newMatch, navigate]);
 
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) {
+      console.error('Erro no login com Google:', error);
+      alert(
+        `Ocorreu um erro ao tentar o login com Google: ${error.message}\n\nPor favor, verifique se o provedor Google está ATIVADO E SALVO no seu painel do Supabase.`,
+      );
+    }
+  };
+
+  const handleTestLogin = async () => {
+    await supabase.signInForTesting();
+  };
+
   const renderContent = () => {
     if (loading) {
       return <LoadingFallback />;
@@ -92,6 +106,7 @@ const App: React.FC = () => {
           AuthComponent = (
             <Login
               onNavigateToRegister={() => setAuthView('register')}
+              onGoogleLogin={handleGoogleLogin}
               onBackToLanding={handleBackToLanding}
             />
           );
@@ -100,6 +115,7 @@ const App: React.FC = () => {
           AuthComponent = (
             <Register
               onNavigateToLogin={() => setAuthView('login')}
+              onGoogleLogin={handleGoogleLogin}
               onBackToLanding={handleBackToLanding}
             />
           );
@@ -110,21 +126,27 @@ const App: React.FC = () => {
             <Landing
               onNavigateToLogin={() => setAuthView('login')}
               onNavigateToRegister={() => setAuthView('register')}
+              onNavigateToTest={handleTestLogin}
             />
           );
       }
       return <Suspense fallback={<LoadingFallback />}>{AuthComponent}</Suspense>;
     }
 
+    // Redirect if profile is incomplete
+    if (!isProfileComplete(user.profile) && window.location.hash !== '#/edit-profile') {
+        return <Navigate to="/edit-profile" replace />;
+    }
+
     // Logged in user view
     return (
       <div className="h-full w-full flex flex-col bg-gray-900">
-        <main className="flex-grow relative overflow-y-auto">
+        <main className="flex-grow relative overflow-y-auto no-scrollbar">
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/explore" element={<Explore onNewMatch={handleNewMatch} />} />
-              <Route path="/matches" element={<Matches initialMatches={matches} />} />
-              <Route path="/matches/:matchId" element={<Matches initialMatches={matches} />} />
+              <Route path="/matches" element={<Matches />} />
+              <Route path="/matches/:matchId" element={<Matches />} />
               <Route path="/my-profile" element={<MyProfile />} />
               <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="*" element={<Navigate to="/explore" />} />
@@ -137,19 +159,18 @@ const App: React.FC = () => {
   };
 
   const containerClass = session
-    ? 'h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl'
+    ? 'h-full w-full max-w-md md:max-w-2xl mx-auto relative overflow-hidden shadow-2xl bg-gray-900'
     : 'h-full w-full relative';
 
   return (
-    <div className="h-screen w-screen bg-gray-900 font-sans">
+    <div className="h-screen w-screen bg-gray-800 font-sans">
       <div className={containerClass}>
         {renderContent()}
         {newMatch && user && (
           <MatchModal
-            match={newMatch}
-            currentUserProfile={user.profile}
             onClose={closeMatchModal}
             onSendMessage={openChatFromMatch}
+            match={newMatch} 
           />
         )}
       </div>
