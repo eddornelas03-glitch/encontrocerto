@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, HarmCategory } from '@google/genai';
 import type { UserProfile, Message, User, MessageSuggestion } from '../types';
 
 // Vite will replace process.env.GEMINI_API_KEY with the actual key from the .env file
@@ -22,8 +22,6 @@ Texto do usuário:
 """
 [TEXTO]
 """`;
-
-const nudityCheckPrompt = `Você é um sistema de moderação de conteúdo para um aplicativo de namoro. Analise a imagem. A imagem contém nudez explícita ou conteúdo sexualmente sugestivo? Responda APENAS com "SIM" se contiver, ou "NAO" se for segura.`;
 
 const fileToGenerativePart = async (file: File) => {
   const base64EncodedDataPromise = new Promise<string>((resolve) => {
@@ -124,34 +122,58 @@ export const isTextOffensive = async (text: string): Promise<boolean> => {
 export const isImageNude = async (file: File): Promise<boolean> => {
   try {
     const imagePart = await fileToGenerativePart(file);
+    // A simple prompt is enough to trigger the safety classifiers.
+    const simplePrompt = "Analyze this image for safety on a dating profile.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-pro-vision',
-      contents: [{ parts: [{ text: nudityCheckPrompt }, imagePart] }],
+      contents: [{ parts: [{ text: simplePrompt }, imagePart] }],
     });
 
     const result = await response.response;
+    const feedback = result.promptFeedback;
 
-    if (result.promptFeedback?.blockReason) {
+    // Check 1: Was the response blocked outright for safety reasons?
+    if (feedback?.blockReason === 'SAFETY') {
       console.warn(
-        `Image blocked by Gemini safety settings: ${result.promptFeedback.blockReason}`,
+        `Image blocked by Gemini. Reason: ${feedback.blockReason}.`,
+        feedback.safetyRatings
       );
       return true;
     }
 
-    const text = result.text()?.trim().toUpperCase();
-
-    if (text?.includes('SIM')) {
-      return true;
+    // Check 2: Even if not blocked, inspect the detailed safety ratings.
+    const safetyRatings = feedback?.safetyRatings;
+    if (safetyRatings) {
+      const explicitRating = safetyRatings.find(
+        (r) => r.category === HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT
+      );
+      // Block if probability is MEDIUM or HIGH.
+      if (explicitRating && ['MEDIUM', 'HIGH'].includes(explicitRating.probability)) {
+        console.warn(
+          `Image flagged for sexually explicit content. Probability: ${explicitRating.probability}`
+        );
+        return true;
+      }
     }
 
+    // If all checks pass, the image is considered safe.
     return false;
   } catch (error) {
+    // This catch block handles network errors, API timeouts, and also
+    // errors thrown by the API for severe violations before a response is formed.
+    const errorMessage = (error as Error).message || '';
+    if (errorMessage.includes('SAFETY')) {
+        console.warn('Image blocked by API safety filter before response generation.', error);
+        return true; // It's a safety block, so return true.
+    }
+
+    // For any other error, it's a technical failure.
     console.warn(
-      'A verificação de imagem falhou tecnicamente. A decisão de upload será passada para o chamador.',
-      error,
+      'A verificação de imagem falhou tecnicamente. Permitindo o upload como fallback.',
+      error
     );
-    // Re-throw the error so the calling function can handle the technical failure case.
+    // Re-throw to let the caller handle the fallback (which is to allow the upload).
     throw error;
   }
 };
