@@ -129,6 +129,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
     []
   );
 
+  // 🔁 Função atualizada para upload de imagem com melhor tratamento de erro
   const handleImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -143,7 +144,7 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
         try {
           isNude = await isImageNude(file);
         } catch (moderationError) {
-          console.warn('Erro na moderação da imagem. Permitindo upload por segurança.');
+          console.warn('Erro na moderação da imagem:', moderationError);
         }
 
         if (isNude) {
@@ -151,25 +152,37 @@ export const useProfileEditor = (onSaveSuccess: () => void) => {
           return;
         }
 
-        const fileName = `${user?.id}/${Date.now()}-${file.name}`;
+        const timestamp = Date.now();
+        const safeFileName = file.name.replace(/\s+/g, '_').toLowerCase();
+        const filePath = `${user?.id}/${timestamp}-${safeFileName}`;
+
         const { data, error } = await supabase.storage
           .from('profiles')
-          .upload(fileName, file);
+          .upload(filePath, file, {
+            upsert: false,
+          });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erro no upload do Supabase:', error);
+          throw new Error(error.message);
+        }
 
         const { data: publicUrlData } = supabase.storage
           .from('profiles')
-          .getPublicUrl(fileName);
+          .getPublicUrl(filePath);
 
         const publicUrl = publicUrlData?.publicUrl;
+        if (!publicUrl) {
+          throw new Error('URL pública não encontrada para a imagem.');
+        }
 
-        if (!publicUrl) throw new Error('URL pública não encontrada.');
-
-        setProfile((p) => ({ ...p, images: [...(p.images || []), publicUrl] }));
-      } catch (err) {
+        setProfile((p) => ({
+          ...p,
+          images: [...(p.images || []), publicUrl],
+        }));
+      } catch (err: any) {
         console.error('Erro ao enviar imagem:', err);
-        setImageError('Erro ao enviar a imagem. Tente novamente.');
+        setImageError(err.message || 'Erro ao enviar a imagem. Tente novamente.');
       } finally {
         setIsAnalyzingImage(false);
         e.target.value = '';
